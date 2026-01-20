@@ -11,3 +11,7 @@ wind_speed = 2
 
 # default albedo. Lower values mean lower ground relflectivity. Range in 0 to 1
 albedo = 0.25
+
+clearsky_fc_timestep = 60
+
+clearsky_fc_time_offset = 30

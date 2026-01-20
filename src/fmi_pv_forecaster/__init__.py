@@ -4,6 +4,8 @@ from .pv_forecaster import set_location
 from .pv_forecaster import set_nominal_power_kw
 from .pv_forecaster import set_timezone
 from .pv_forecaster import get_timezone
+from .pv_forecaster import set_clearsky_fc_timestep
+from .pv_forecaster import set_clearsky_fc_time_offset
 
 # optional system parameters
 from .pv_forecaster import set_module_elevation
@@ -42,6 +44,8 @@ __all__ = [
     "set_nominal_power_kw",
     "set_timezone",
     "get_timezone",
+    "set_clearsky_fc_timestep",
+    "set_clearsky_fc_time_offset",
 
 
     "add_local_time_column",

@@ -449,6 +449,80 @@ def test_interpolation_outside_forecast_time():
 
 
 
+def test_setting_of_timestep():
+    print("Testing setting of timestep")
+
+    # geolocation
+    latitude = random_float(-85, 85)
+    longitude = random_float(-90, 90)
+    pv_forecast.set_location(latitude, longitude)
+
+    # panel angles
+    pv_forecast.set_angles(45, 180)
+
+    # random timestep
+    timestep = random_int(1, 60)
+    pv_forecast.set_clearsky_fc_timestep(timestep)
+
+    # forecast
+    clear_fc = pv_forecast.get_default_clearsky_estimate()
+
+    timedelta_minutes = None
+
+    # going through the forecast each row by row.
+    for i in range(len(clear_fc)):
+        if i == 0:
+            continue
+        row = clear_fc.iloc[i]
+        last_row = clear_fc.iloc[i-1]
+
+        timedelta = row.name - last_row.name
+        timedelta_minutes = timedelta.seconds//60
+
+        assert timedelta_minutes == timestep, ("Error with setting timesteps. Timestep should have been " + str(timestep)
+                                               + " but delta between rows in forecast was " + str(timedelta))
+
+    print("Timedelta between rows was " + str(timedelta_minutes))
+    print("The set timestep was: " + str(timestep))
+
+
+def test_setting_of_time_offset():
+    print("Testing setting of time offset, this will only test if time offset interferes with time steps.")
+
+    # geolocation
+    latitude = random_float(-85, 85)
+    longitude = random_float(-90, 90)
+    pv_forecast.set_location(latitude, longitude)
+
+    # panel angles
+    pv_forecast.set_angles(45, 180)
+
+    # random timestep
+    timestep = random_int(1, 60)
+    timeshift = random_int(1, 60)
+    pv_forecast.set_clearsky_fc_timestep(timestep)
+    pv_forecast.set_clearsky_fc_time_offset(timeshift)
+
+    # forecast
+    clear_fc = pv_forecast.get_default_clearsky_estimate()
+
+    timedelta_minutes = None
+
+    # going through the forecast each row by row.
+    for i in range(len(clear_fc)):
+        if i == 0:
+            continue
+        row = clear_fc.iloc[i]
+        last_row = clear_fc.iloc[i-1]
+
+        timedelta = row.name - last_row.name
+        timedelta_minutes = timedelta.seconds//60
+
+        assert timedelta_minutes == timestep, ("Error with setting timesteps and time offsets. Timestep should have been " + str(timestep)
+                                               + " but delta between rows in forecast was " + str(timedelta))
+
+    print("Timedelta between rows was " + str(timedelta_minutes))
+    print("The set timestep was: " + str(timestep))
 
 
 

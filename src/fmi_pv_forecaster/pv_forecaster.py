@@ -311,6 +311,9 @@ def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60
             " valid 0-90, 0-360 degree panel angles."
         )
 
+    # timeshifting
+
+    interval_start.minute = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
 
     # step 1. getting clearsky radiation
     data = __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep)
@@ -375,6 +378,38 @@ def get_default_fmi_forecast():
     return data
 
 
+def set_clearsky_fc_timestep(new_timestep):
+    """
+    This function will set timestep in minutes used by clearsky forecasts.
+    Default value is 60 in order to match FMI forecasts, but any integer value can be used.
+
+    Values such as 15 or 5 will result in smooth plots and as the PV model is fast, even using 1 will not slow the
+    clearsky function significantly.
+
+    With 60-minute timesteps forecasts will be timed 12:00, 13:00, 14:00 ...
+    With 30-minute timesteps forecasts will be timed 12:00, 12:30, 13:00 ...
+
+    See set_clearsky_fc_time_offset() for adjusting forecast offsets.
+
+    :param new_timestep: Timestep in minutes.
+    """
+    fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_timestep = new_timestep
+
+def set_clearsky_fc_time_offset(new_offset):
+    """
+    This function will set offset in minutes used by clearsky forecasts.
+    Normally forecasts are done hourly with 0 offsets, meaning 12:00, 13:00, 14:00 ...
+
+    With default 0-minute offsets forecasts will be timed 12:00, 13:00, 14:00 ...
+    With 30-minute offsets forecasts will be timed 12:30, 13:30, 14:30 ...
+
+    See set_clearsky_fc_timestep() for adjusting time between measurements.
+
+    :param new_offset: Forecast timestamp offset.
+    """
+    fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset = new_offset
+
+
 def get_default_clearsky_estimate():
     """
     This function returns an approximation for the clearsky PV output during a time window which should cover the
@@ -388,7 +423,7 @@ def get_default_clearsky_estimate():
     time_start = datetime.datetime(time_start.year, time_start.month, time_start.day, time_start.hour)
     time_end = time_start + datetime.timedelta(hours=68)
 
-    data = get_clearsky_estimate_for_interval(time_start, time_end, 60)
+    data = get_clearsky_estimate_for_interval(time_start, time_end, fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_timestep)
 
     return data
 
