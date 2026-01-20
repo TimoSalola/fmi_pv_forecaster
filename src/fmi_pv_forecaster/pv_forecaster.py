@@ -286,7 +286,7 @@ def process_radiation_df(data):
 
     if not extended_output:
         # if extended output not in use, return only some columns
-        return data[["T", "wind", "cloud_cover", "module_temp", "output"]]
+        return data[["T", "wind", "module_temp", "output"]]
 
     return data
 
