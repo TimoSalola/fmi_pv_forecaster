@@ -13,79 +13,73 @@ forecasts can be used for testing purposes, system monitoring or in cases when i
 The PV model can also be used with external data sources by feeding it dataframes with the required radiation components.
 See example on using external data from usage_examples.md.
 
-#### Authors
-Timo Salola(Finnish meteorological institute)
 
-Additional help from: Viivi Kallio, William Wandji, Anders Lindfors, Juha Karhu.
+---
+## FMI PV forecasts
 
-This project uses PVlib.
-
-
-## Forecast updating frequency and time window
-The FMI open data forecasts are available for a 66-hour window. This window contains a couple of hours of past data due
-to weather model simulations taking several hours of time on supercomputers. Forecasts update once every 3 hours.
+### Forecast updating frequency and time window
+The FMI open data forecasts are available for a 66-hour window. This window extends into the past due to the
+simulations being started at T0 and being finished and available at around T0 + 3 hours. Available forecasts update
+once every 3 hours with exact timing having some variance.
 
 
-## Geographic boundaries
+### Geographic boundaries
 
 The available forecasting region depends on the radiation and weather forecasts. FMI open forecasting region 
-covers Finland, Scandinavia- and baltic countries with some additional margin. 
-See https://en.ilmatieteenlaitos.fi/numerical-weather-prediction.
+covers Finland, Scandinavia and the baltic countries with some additional margin. 
 
-PVlib clear sky forecasts are not limited to a region, and they can be calculated globally.
+See https://en.ilmatieteenlaitos.fi/numerical-weather-prediction for the full available forecast area.
 
-## Forecast accuracy
+The geographic area is split into a 2.5km by 2.5km grid. When data for a location is retrieved from the FMI servers,
+forecast for the closest available grid point is used.
 
-The PV model itself has been tested against on site measurements of solar radiation, air temperature and wind speed. 
-In these tests the model has proven to be accurate to nearly perfect in various weather conditions experienced in Finland.
-The PV model was not specifically tuned for Finnish conditions, and it should behave well regardless of the geographic
-region.
+### Forecast accuracy
 
-
-However, especially clouds influence PV output and current weather forecasting models are not very good at precise
-cloud forecasting. In addition, forecasts typically 
+The PV model has been tested with on-site measurements and with these measurements as inputs, the simulated
+PV output is nearly identical to measured PV output in various weather conditions even at 1-minute time resolution.
 
 
-can not forecast clouds 
+Forecasts and measured PV output also align well together, but the accuracy of PV forecasts is largely determined 
+by the accuracy of cloud forecasts. Especially partly cloudy days are challenging to forecast accurately.
 
-. Forecasts for totally clear
+---
+
+## Clearsky forecasts
+
+This package also contains functions for simulating clear sky PV output using simulated radiation values from
+PVlib. These forecasts do not have geographical restrictions, and they can be computed for any time interval with any
+time resolution. Another benefit is that computing them does not require internet access.
+
+The downsides of clear sky forecasts are the complete lack of weather-awareness. The PV model requires air temperature
+and wind speed values which must be manually fed to the system for clear sky forecasts to be computable. A good 
+air temperature would be equal to the expected air temperature during peak production hours for the interval. Given wind 
+value depends on the PV site and experienced weather. 2m/s is a fairly good default value, but values higher
+or lower can be used if panels are sheltered or exposed or if the location is particularly windy.
+
+---
+
+# Usage of external data instead of FMI open data
+The PV model was programmed in a way which makes usage of external radiation data as easy as possible. If you have
+access to DNI, DHI and GHI radiation tables from historical forecasts or forecasting service, you can feed *"standard"* format
+dataframes into the PV model. This way you can use the same PV model for your own forecasts or even research purposes
+without having to implement the PV model yourself.
+
+Similarly to the clearsky forecasts, using your own radiation and weather data as inputs does not come with the 
+time interval or temporal resolution restrictions of FMI open data. Nor are there any geographical restrictions.
+
+External data should have radiation values DNI, DHI and GHI + datetime included. Additionally, air temperature
+ and wind speed values will increase the accuracy of the model, but constants in their place can also be given.
+
+See [usage examples](usage_examples.md) for an example on using data from a .csv file as input.
 
 
-significantly and current forecasting models tend to have difficulties with forecasting clouds accurately.
+---
 
-When 
-
-strongly influenced by clouds and accurate forecasting of clouds is difficult. 
-
-
-radiation components which are the most significant factor in PV outpu
-
-The PV forecasting tool included in the package is an implementation of this PV model, and it uses radiation- and
-weather forecasts from FMI open data as inputs. FMI open data offers forecasts for a geographic region covering Finland,
-Scandinavian- and baltic countries with some additional margin. Due to the unpredictable nature of clouds and the 
-significant influence of clouds on the performance of PV systems forecasts generated by this package should be
-considered with the same uncertainty as cloudiness in weather forecasts.
+# Usage example
+This example shows how to use the forecasting tool by computing a forecast for a 4kw system.
+Additional examples with commentary are available at [usage examples](usage_examples.md).
 
 
-
-
-
-The FMI PV model
-consists of physical models which simulate panel reflective losses, panel temperatures and output efficiency among
-other features, resulting in a processing pipeline which can be fed radiation data.
-
-The 
-
-
-
-This project is the packaged version of a solar photovoltaic output forecasting tool and model published earlier at
-https://github.com/fmidev/fmi-open-pv-forecast.
-
-The PV model is a 6 step data processing model which utilizes 
-
-Goal here was to make the model and forecasting tools as easy to use as possible for home automation and research projects.
-
-### Minimal example
 ```python
 import fmi_pv_forecaster as pvfc
 
@@ -119,17 +113,16 @@ Time
 ```
 
 
-More examples on how to use the model are available usage_examples.md.
-
-## PV model
-
-The packaged nature of the PV model hides the processing pipeline. In a typical usage scenario the user will feed in 
-information on geolocation, panel angles, system size and request a forecast for said installation. However understanding
-the model itself may help in troubleshooting.
-
-The data processing pipeline used by the PV model consists of
-
 
 
 ---
 
+
+#### Authors and acknowledgements
+Timo Salola.
+
+Additional help from: Viivi Kallio, William Wandji, Anders Lindfors, Juha Karhu.
+
+This project uses PVlib.
+
+<img src="readme_images/pvlib_logo.webp" height="100"/>
