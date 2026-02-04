@@ -312,8 +312,8 @@ def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60
         )
 
     # timeshifting
-
-    interval_start.minute = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
+    # this cannot be used as setting a minute is not possible
+    #interval_start.minute = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
 
     # step 1. getting clearsky radiation
     data = __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep)
