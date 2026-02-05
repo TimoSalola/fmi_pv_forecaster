@@ -311,9 +311,12 @@ def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60
             " valid 0-90, 0-360 degree panel angles."
         )
 
+
     # timeshifting
     # this cannot be used as setting a minute is not possible, this kills time offset function
-    #interval_start.minute = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
+    offset = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
+
+    interval_start = datetime.datetime(year=interval_start.year, month=interval_start.month, day=interval_start.day, hour=interval_start.hour, minute=offset)
 
     # step 1. getting clearsky radiation
     data = __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep)
