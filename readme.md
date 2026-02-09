@@ -11,7 +11,7 @@ The forecasting package has in-built functionality for using clear sky radiation
 forecasts can be used for testing purposes, system monitoring or in cases when internet access is not available.
 
 The PV model can also be used with external data sources by feeding it dataframes with the required radiation components.
-See example on using external data from usage_examples.md.
+See example on using external data from [usage examples](usage_examples.md).
 
 
 ---
@@ -21,6 +21,7 @@ See example on using external data from usage_examples.md.
 The FMI open data forecasts are available for a 66-hour window. This window extends into the past due to the
 simulations being started at T0 and being finished and available at around T0 + 3 hours. Available forecasts update
 once every 3 hours with exact timing having some variance.
+
 
 
 ### Geographic boundaries
@@ -33,17 +34,8 @@ See https://en.ilmatieteenlaitos.fi/numerical-weather-prediction for the full av
 The geographic area is split into a 2.5km by 2.5km grid. When data for a location is retrieved from the FMI servers,
 forecast for the closest available grid point is used.
 
-### Forecast accuracy
-
-The PV model has been tested with on-site measurements and with these measurements as inputs, the simulated
-PV output is nearly identical to measured PV output in various weather conditions even at 1-minute time resolution.
-
-
-Forecasts and measured PV output also align well together, but the accuracy of PV forecasts is largely determined 
-by the accuracy of cloud forecasts. Especially partly cloudy days are challenging to forecast accurately.
 
 ---
-
 ## Clearsky forecasts
 
 This package also contains functions for simulating clear sky PV output using simulated radiation values from
@@ -57,6 +49,33 @@ value depends on the PV site and experienced weather. 2m/s is a fairly good defa
 or lower can be used if panels are sheltered or exposed or if the location is particularly windy.
 
 ---
+## Forecast accuracy
+
+The forecasts accuracy depends on two factors, the accuracy of the physical PV model and the accuracy of weather forecasts
+used as inputs for the PV model. In short, the model is very accurate, forecast accuracy varies a lot depending on the
+weather.
+
+**Model accuracy**
+
+In the figure below, the inverter output of a PV system(grey) is compared against the PV model with on-site radiation and
+weather measurements as inputs(blue). These lines are mostly overlapping and the deviations between the two could be caused
+by small errors in the PV model itself or the short distance between the weather and radiation measuring instruments.
+I would dare to make the claim that this level of accuracy is about as good as is possible without tuning
+the model to a specific system.
+
+
+**Forecast accuracy**
+
+When the weather forecast based model output(teal) is compared against actual inverter output(grey), we see more significant
+deviations. The weather during these days appears to have been mostly cloudy with some short periods of direct sunlight
+reaching the panel system. Predictions exactly this kind of weather are hard and the teal forecast is nearly as good
+as it could be with the challenging cloud situation taken into consideration.
+
+
+<img src="readme_images/23-09-sample_img.png" height="400"/>
+
+---
+
 
 # Usage of external data instead of FMI open data
 The PV model was programmed in a way which makes usage of external radiation data as easy as possible. If you have
@@ -76,8 +95,7 @@ See [usage examples](usage_examples.md) for an example on using data from a .csv
 ---
 
 # Usage example
-This example shows how to use the forecasting tool by computing a forecast for a 4kw system.
-Additional examples with commentary are available at [usage examples](usage_examples.md).
+This minimal example shows how to use the forecasting tool by computing a forecast for a 4kw system.
 
 
 ```python

@@ -1,7 +1,7 @@
 
 # Examples
 
-#### Case 1: FMI weather forecast based PV system output
+## Case 1: FMI weather forecast based PV system output
 ```python
 import fmi_pv_forecaster as pvfc
 
@@ -53,7 +53,7 @@ Time
 - **output** Power output in watts.
 
 ---
-#### Case 2: Plotting clearsky and FMI weather based forecasts into the same plot
+## Case 2: Plotting clearsky and FMI weather based forecasts into the same plot
 
 ```python
 import fmi_pv_forecaster as pvfc
@@ -217,7 +217,7 @@ the dataframe doesn't have the variables in the dataframe. The constants can als
 ---
 
 
-#### Example 4. Forecast interpolation
+## Example 4. Forecast interpolation
 The FMI forecasts may not always align with times which are convenient for the user. For example, if you are interested
 in data with time resolution of 15 minutes, eq. (12:00, 12:15, 12:30,...), FMI open data time resolution is 60 minutes
 and this obviously causes issues.
@@ -282,8 +282,8 @@ Power at 2026-02-05 12:00:00 = 1064W
 Power at 2026-02-05 11:14:10 = 1492W
 ```
 
-
-#### Example 5. Estimating clearsky power for custom time interval
+---
+## Example 5. Estimating clearsky power for custom time interval
 
 This sample shows how to calculate clear sky forecast for a single day at 1-minute time resolution using a time 
 interval which isn't available from FMI open data.
@@ -349,12 +349,15 @@ Resulting plot:
 <img src="readme_images/example_5_img.png" height="300"/>
 
 
-#### Example 6. Multiple panel angles
+---
+
+## Example 6. Multiple panel angles
 
 This example shows how to generate forecasts for a single PV system with 2 different panel angles.
 The process is fairly similar as forecasting for a single panel system. Note that if you do not
-change the coordinates, the code will only ask the server for weather and radiation data once. This saves
-bandwith and API calls.
+change the coordinates(which you should not do unless the two panel groups are more than a kilometer apart),
+the code will only ask the server for weather and radiation data once. This saves
+bandwidth and API calls.
 
 The same code could be used for forecasting the output of bifacial systems with some tuning. Our understanding
 suggests that bifacial panels could be modeled as 2 panels with opposing directions with fairly good accuracy.
