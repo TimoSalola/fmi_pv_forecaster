@@ -1,7 +1,15 @@
+This document has examples on how to use the python package.
 
-# Examples
-
-## Case 1: FMI weather forecast based PV system output
+**Table of contents**
+<!-- TOC -->
+  * [Example 1: FMI weather forecast based PV system output](#example-1-fmi-weather-forecast-based-pv-system-output)
+  * [Example 2: Plotting clearsky and FMI weather based forecasts into the same plot](#example-2-plotting-clearsky-and-fmi-weather-based-forecasts-into-the-same-plot)
+  * [Example 3. Processing external data with the PV model](#example-3-processing-external-data-with-the-pv-model)
+  * [Example 4. Forecast interpolation](#example-4-forecast-interpolation)
+  * [Example 5. Estimating clearsky power for custom time interval](#example-5-estimating-clearsky-power-for-custom-time-interval)
+  * [Example 6. Multiple panel angles](#example-6-multiple-panel-angles)
+<!-- TOC -->
+## Example 1: FMI weather forecast based PV system output
 ```python
 import fmi_pv_forecaster as pvfc
 
@@ -44,7 +52,7 @@ Time
 ```
 
 
-#### Output parameters explained:
+**Output parameters explained:**
 - **Time** Datetime index, times are in UTC time.
 - **T** Air temperature at 2m from ground.
 - **wind** Wind speed in m/s at 2m from ground.
@@ -53,7 +61,7 @@ Time
 - **output** Power output in watts.
 
 ---
-## Case 2: Plotting clearsky and FMI weather based forecasts into the same plot
+## Example 2: Plotting clearsky and FMI weather based forecasts into the same plot
 
 ```python
 import fmi_pv_forecaster as pvfc
@@ -100,7 +108,7 @@ plt.show()
 ```
 
 
-Resulting plot:
+**Resulting plot:**
 
 <img src="readme_images/example_2_img.png" height="300"/>
 
@@ -108,7 +116,7 @@ Resulting plot:
 ---
 
 
-#### Example 3. Processing external data with the PV model
+## Example 3. Processing external data with the PV model
 
 ```python
 import pandas as pd
@@ -150,7 +158,7 @@ results = pvfc.process_radiation_df(radiation_data)
 print_full(results)
 ```
 
-Resulting print:
+**Resulting print:**
 
 ```commandline
 Radiation dataframe
@@ -260,7 +268,7 @@ print("Power at " + str(point_in_time2) + " = " + str(round(datapoint2)) +"W")
 
 ```
 
-Output:
+**Output:**
 ```commandline
 Forecast:
                         T  wind  module_temp       output
@@ -344,7 +352,7 @@ plt.show()
 
 
 ```
-Resulting plot:
+**Resulting plot:**
 
 <img src="readme_images/example_5_img.png" height="300"/>
 
@@ -443,6 +451,6 @@ plt.show()
 
 ````
 
-Resulting plot:
+**Resulting plot:**
 
 <img src="readme_images/multipanel_example.png" height="300"/>

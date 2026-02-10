@@ -11,7 +11,6 @@ The forecasting package has in-built functionality for using clear sky radiation
 forecasts can be used for testing purposes, system monitoring or in cases when internet access is not available.
 
 The PV model can also be used with external data sources by feeding it dataframes with the required radiation components.
-See example on using external data from [usage examples](usage_examples.md).
 
 
 ---
@@ -21,8 +20,6 @@ See example on using external data from [usage examples](usage_examples.md).
 The FMI open data forecasts are available for a 66-hour window. This window extends into the past due to the
 simulations being started at T0 and being finished and available at around T0 + 3 hours. Available forecasts update
 once every 3 hours with exact timing having some variance.
-
-
 
 ### Geographic boundaries
 
@@ -47,6 +44,11 @@ and wind speed values which must be manually fed to the system for clear sky for
 air temperature would be equal to the expected air temperature during peak production hours for the interval. Given wind 
 value depends on the PV site and experienced weather. 2m/s is a fairly good default value, but values higher
 or lower can be used if panels are sheltered or exposed or if the location is particularly windy.
+
+See examples [2](examples.md#example-2-plotting-clearsky-and-fmi-weather-based-forecasts-into-the-same-plot)
+and [5](examples.md#example-5-estimating-clearsky-power-for-custom-time-interval).
+
+
 
 ---
 ## Forecast accuracy
@@ -89,7 +91,7 @@ time interval or temporal resolution restrictions of FMI open data. Nor are ther
 External data should have radiation values DNI, DHI and GHI + datetime included. Additionally, air temperature
  and wind speed values will increase the accuracy of the model, but constants in their place can also be given.
 
-See [usage examples](usage_examples.md) for an example on using data from a .csv file as input.
+See [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for an example on using data from a .csv file as input.
 
 
 ---
