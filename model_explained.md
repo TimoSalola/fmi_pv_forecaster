@@ -1,4 +1,4 @@
-# PV model explained
+# PV model explained -- WORK IN PROGRESS
 This document explains the inner workings of the PV model in detail. Information shared here can be useful for debugging, implementation
 or research purposes.
 
@@ -28,10 +28,69 @@ or research purposes.
   * [Extended output tables](#extended-output-tables)
 <!-- TOC -->
 
-## Steps of the PV model
-The model can be said to consist of 6 steps. These steps are hidden inside the package, and so they are not
-exposed to the user. 
+## PV model from the outside
 
+With some simplifications, the PV model looks fairly simple from the outside. In most cases, usage consists of
+feeding in system parameters and requesting a forecast.
+
+
+```mermaid
+
+stateDiagram-v2
+    
+    geo : WGS84 Geolocation\n(latitude, longitude)
+    angles : Panel angles\n(tilt, azimuth)
+    size : System size\n(kW)
+    weather : Weather data\n(T, wind)
+    rad : Radiation data\n(DNI, DHI, GHI)
+    time : Time(UTC)
+    
+    poa_radiation: Panel projected radiation\n(DNI_poa, DHI_poa, GHI_poa)
+    
+    user : user
+    fmi: FMI open data
+    pvlib: PVlib
+    
+    classDef remaining stroke:cyan
+    classDef data_provider stroke:red
+    
+    class size, geo, time, size, rad, angles,weather, poa_radiation remaining
+    class pvlib, fmi data_provider
+ 
+    
+    user --> geo
+    user --> angles
+    user --> size
+    
+    user --> time
+    
+    fmi --> rad
+    fmi --> weather
+    
+    time --> fmi
+    time --> pvlib
+    
+    geo -->pvlib
+    geo -->fmi
+    
+    note left of time : Cyan color marks data used in later stages
+    
+
+    rad --> poa_radiation
+    angles -->poa_radiation
+    
+
+    
+    
+    
+    
+    
+
+```
+
+
+
+## PV model in 6 steps
 ```python
 pvfc.set_angles(25, 180)
 pvfc.set_location(60.1576,24.8762)

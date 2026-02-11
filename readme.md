@@ -2,8 +2,8 @@
 
 
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
-weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather aware PV forecasts for 
-a 66-hour period. These forecasts take panel orientation, panel surface reflections, panel temperature and other factors
+weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for 
+a 66-hour period. These forecasts take panel orientation, panel surface reflections, panel temperature, and other factors
 into account, resulting in generally accurate modeling of PV output when weather forecasts align with actual experienced
 weather.
 
@@ -16,10 +16,18 @@ The PV model can also be used with external data sources by feeding it dataframe
 ---
 ## FMI PV forecasts
 
-### Forecast updating frequency and time window
-The FMI open data forecasts are available for a 66-hour window. This window extends into the past due to the
-simulations being started at T0 and being finished and available at around T0 + 3 hours. Available forecasts update
-once every 3 hours with exact timing having some variance.
+### Forecast length and updating frequency
+
+
+**Updates:** Once per ~3 hours.
+
+**Forecast length:** 66-hours.
+
+**Offset:** 3 to 6 hours into the past.
+
+**Example:**
+> Forecast requested at 12:24 UTC on day 1, got forecast with interval [Day 1 9:00 UTC <-> Day 3 3:00UTC].
+
 
 ### Geographic boundaries
 
@@ -28,12 +36,12 @@ covers Finland, Scandinavia and the baltic countries with some additional margin
 
 See https://en.ilmatieteenlaitos.fi/numerical-weather-prediction for the full available forecast area.
 
-The geographic area is split into a 2.5km by 2.5km grid. When data for a location is retrieved from the FMI servers,
+The geographic area is split into a ~2.5km by ~2.5km grid. When data for a location is retrieved from the FMI servers,
 forecast for the closest available grid point is used.
 
 
 ---
-## Clearsky forecasts
+## Clear sky forecasts
 
 This package also contains functions for simulating clear sky PV output using simulated radiation values from
 PVlib. These forecasts do not have geographical restrictions, and they can be computed for any time interval with any
@@ -70,7 +78,7 @@ the model to a specific system.
 
 When the weather forecast based model output(teal) is compared against actual inverter output(grey), we see more significant
 deviations. The weather during these days appears to have been mostly cloudy with some short periods of direct sunlight
-reaching the panel system. Predictions exactly this kind of weather are hard and the teal forecast is nearly as good
+reaching the panel system. Predicting exactly this kind of weather is hard and the teal forecast is nearly as good
 as it could be with the challenging cloud situation taken into consideration.
 
 
@@ -84,12 +92,6 @@ The PV model was programmed in a way which makes usage of external radiation dat
 access to DNI, DHI and GHI radiation tables from historical forecasts or forecasting service, you can feed *"standard"* format
 dataframes into the PV model. This way you can use the same PV model for your own forecasts or even research purposes
 without having to implement the PV model yourself.
-
-Similarly to the clearsky forecasts, using your own radiation and weather data as inputs does not come with the 
-time interval or temporal resolution restrictions of FMI open data. Nor are there any geographical restrictions.
-
-External data should have radiation values DNI, DHI and GHI + datetime included. Additionally, air temperature
- and wind speed values will increase the accuracy of the model, but constants in their place can also be given.
 
 See [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for an example on using data from a .csv file as input.
 
