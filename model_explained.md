@@ -1,109 +1,43 @@
-# PV model explained -- WORK IN PROGRESS
-This document explains the inner workings of the PV model in detail. Information shared here can be useful for debugging, implementation
-or research purposes.
-
-<!-- TOC -->
-* [PV model explained](#pv-model-explained)
-  * [Steps of the PV model](#steps-of-the-pv-model)
-    * [1. Data input](#1-data-input)
-    * [2. Irradiance transposition](#2-irradiance-transposition)
-    * [3. Reflection estimation](#3-reflection-estimation)
-    * [4. Absorbed radiation calculation](#4-absorbed-radiation-calculation)
-    * [5. Panel temperature estimation](#5-panel-temperature-estimation)
-    * [6. DC output estimation](#6-dc-output-estimation)
-  * [Model input constants](#model-input-constants)
-    * [Geolocation](#geolocation)
-    * [Panel tilt and azimuth](#panel-tilt-and-azimuth)
-    * [System size](#system-size)
-    * [Module elevation](#module-elevation)
-  * [Additional inputs](#additional-inputs)
-    * [Wind speed](#wind-speed)
-    * [Air temperature](#air-temperature)
-    * [Albedo](#albedo)
-  * [Tricks with inputs](#tricks-with-inputs)
-* [Understanding data tables](#understanding-data-tables)
-  * [CSV content example](#csv-content-example)
-    * [Missing radiation components](#missing-radiation-components)
-  * [CSV reading example](#csv-reading-example)
-  * [Extended output tables](#extended-output-tables)
-<!-- TOC -->
-
-## PV model from the outside
-
-With some simplifications, the PV model looks fairly simple from the outside. In most cases, usage consists of
-feeding in system parameters and requesting a forecast.
+# PV model explained
+This document explains the steps of the PV model. Information here can be useful for research purposes, model
+validification or debugging. Understanding everything here is not necessary for casual use of the model.
 
 
+## Model overview
+Explained in a simplified manner, the model is made up of multiple physical models chained together, forming a
+data processing pipeline. The input of this pipeline is a pandas dataframe, these can be thought as data tables with 
+rows and columns. Each row 
+represents a moment in time and each column represents a measurable physical value such as temperature or 
+the amount some radiation type. 
+
+
+The steps in the processing pipeline represent the modeling of a physical phenomena. And they add a new column 
+or a set of columns to the data table.  The last step is an
+exception as while it adds the output column, it also removes a large amount of the intermediary columns which
+are typically not useful to the user.
+
+
+**Model diagram**
 ```mermaid
 
-stateDiagram-v2
+stateDiagram-v2 
     
-    geo : WGS84 Geolocation\n(latitude, longitude)
-    angles : Panel angles\n(tilt, azimuth)
-    size : System size\n(kW)
-    weather : Weather data\n(T, wind)
-    rad : Radiation data\n(DNI, DHI, GHI)
-    time : Time(UTC)
+    s1 : 1. Data input
+    s2 : 2. POA transposition
+    s3 : 3. Reflection estimation
+    s4 : 4. Panel total radiation estimation
+    s5 : 5. Panel temperature modeling
+    s6 : 6. System output modeling
     
-    poa_radiation: Panel projected radiation\n(DNI_poa, DHI_poa, GHI_poa)
-    
-    user : user
-    fmi: FMI open data
-    pvlib: PVlib
-    
-    classDef remaining stroke:cyan
-    classDef data_provider stroke:red
-    
-    class size, geo, time, size, rad, angles,weather, poa_radiation remaining
-    class pvlib, fmi data_provider
- 
-    
-    user --> geo
-    user --> angles
-    user --> size
-    
-    user --> time
-    
-    fmi --> rad
-    fmi --> weather
-    
-    time --> fmi
-    time --> pvlib
-    
-    geo -->pvlib
-    geo -->fmi
-    
-    note left of time : Cyan color marks data used in later stages
-    
-
-    rad --> poa_radiation
-    angles -->poa_radiation
-    
-
-    
-    
-    
-    
-    
+    s1 --> s2
+    s2 --> s3
+    s3 --> s4
+    s4 --> s5
+    s5 --> s6
 
 ```
 
-
-
-## PV model in 6 steps
-```python
-pvfc.set_angles(25, 180)
-pvfc.set_location(60.1576,24.8762)
-pvfc.set_nominal_power_kw(4)
-data = pvfc.get_default_fmi_forecast()
-```
-In the code sample above, the first 3 lines containing parameter inputs are parts of [Data input](#1.-data-input).
-The 4th line requesting the default fmi forecast is a compound function which handles the remaining part of step 1
-and starts steps 2, 3, 4, 5 and 6.
-
-Internally the code looks a bit like this:
-
-
+**Model as code**
 ```python
 # step 1. Loading data into the system
 data = dummy_data_download_function_here()
@@ -127,298 +61,282 @@ data = output_estimator.add_output_to_df(data)
 ```
 
 
+# Detailed description
 
-### 1. Data input
+Diagram guide:
+- Red : Required constant
+- Orange : Optional constant
+- Blue : dataframe
+
+
+## Step 1. Data input
+
 This step consists of feeding the system geolocation, panel angles, system size and other needed system
-parameters. Feeding radiation tables into the system is also considered to belong to this step.
+parameters. And the sourcing of a radiation dataframe.
 
-### 2. Irradiance transposition
-Irradiance transposition is the process of calculating how much radiation reaches the panel surface from the three
-radiation sources, direct sunlight, atmospheric scattering and ground reflection.
-
-**DNI** is the direct sunlight component. And DNI transposition algorithm is just a simple geometric projection.
-The algorithm used is from Sandia National Laboratories, the original author of PVlib, and it can be found
-[here](https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-beam/).
-
-**DHI** is the atmospheric scattering component, and it is calculated by using DHI radiation and Perez diffuse sky model
-built into PVlib.
-
-**GHI** is a sum of all radiation per square of ground, and it is used to estimate reflections from the ground.
-The algorithm used is from Sandia National Laboratories, source 
-[here](https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/).
-
-### 3. Reflection estimation
-
-Once we have estimated how much radiation the panel surface receives from the three sources, we can estimate reflective
-losses. Reflective losses have to be calculated separately as the direction of incoming light is different with
-all three radiation sources.
-
-The reflection algorithms are based on Martin & Ruiz 2001 _Calculation of the PV modules angular losses under
-field conditions by means of an analytical model_. This paper is exceptionally good and I would 
-recommend reading it if you are interested in PV modeling.
+--- 
+### Constant input
 
 
-### 4. Absorbed radiation calculation
-The absorbed radiation is calculated as the sum of the three transposed radiation values with reflective losses
-removed. No complex math here.
+This is the first half of step 1. Here required(red), optional(orange) and conditional(yellow) parameters are 
+fed into the system. 
+
+- Required parameters should always be given to the PV model. System size has a default value of 1kW, but without 
+geolocation or panel angles, attempting to run the model will result in a crash.
+
+- Optional parameters increase the model performance. Default values for these parameters exist and defaults can often
+be used without major modeling errors.
+
+- Conditional parameters are only used when the dataframe generated here in step 1 does not contain the corresponding
+values. For example: The FMI open data service already returns a dataframe with radiation, wind, air temp and 
+albedo information. And so the conditional constants will never be used by the PV model. But as PVlib does not
+attempt to estimate wind, air temp or albedo, the model has to use either the built-in constants or user given 
+constants. Default constants are tuned for regular midsummer conditions.
 
 
-### 5. Panel temperature estimation
-Panel temperature is estimated with King 2004 from _Photovoltaic array
-performance model_.
-
-Inputs in this phase are absorbed radiation, air temperature and wind speed. 
-
-### 6. DC output estimation
-
-Finally, the DC output is estimated with the Huld 2010 model published in _Mapping the performance of PV modules, effects of 
-module type and data averaging_.
 
 
----
-## Model input constants
-These constants are given to the PV model with `pvfc.set_variable_name(value)` -functions. They describe the
-physical location and properties of the PV system.
+```mermaid
+ stateDiagram-v2
+     
+     classDef constant stroke:red
+     classDef optional_constant stroke:orange
+     classDef conditional_constant stroke:yellow
+     classDef df stroke:blue
+     
+     class geo, angles, size constant
+     class radw_table,external_radiation_table,pvlib_rad_table,  rad_table df
+     class elevation optional_constant
+     class air_t, albedo, wind conditional_constant
+     
+     user: User input
+     
+     geo : Geolocation
+     angles: Panel Angles
+     size : System size
+     elevation : Default panel elevation
+     wind : Default wind speed
+     air_t : Default air temperature
+     albedo : Default albedo
 
-### Geolocation
 
-```python
-pvfc.set_location(60.1576,24.8762)
-```
-- First latitude, then longitude. Both in WGS84 format.
-- These can be easily retrieved from google maps. `www.google.com/maps/@60.1576,24.8762,481m`
-- Location does not have to be exact, 3 to 4 decimals or about a kilometer from actual location is enough.
 
-### Panel tilt and azimuth
-```python
-pvfc.set_angles(25, 180)
-```
-- First tilt, then azimuth.
-- Unit is degrees.
-- Tilt is 0 for a horizontal panel, eq. panel flat against the ground. 90 for a panel against the wall. 
-- Azimuth tells the compass direction, range 0 to 360. 0 for north, 90 for east, 180 for south and so on.
-- Accurate angle values are important and simulations with an azimuth deviation of just 5 degree can be
-visibly distinct.
-- Can be given as integers or decimals, integers are precise enough.
+     
+     user --> geo  : .set_location(57.00,24.06)
+     user --> angles : .set_angles(25, 235)
+     user --> size : .set_nominal_power_kw(10)
+     user --> wind : .set_default_wind_speed(2)
+     user --> air_t: .set_default_air_temp(14)
+     user --> elevation: .set_module_elevation(2)
+     user --> albedo : .set_default_albedo(0.2)
+ 
+     
 
-### System size
-```python
-pvfc.set_nominal_power_kw(4)
+
+
+     
+
+
+
 ```
 
-- Nominal power of the PV system in kilowatts.
-- Use nominal_power*system_efficiency as input if you want to simulate inverter and electrical efficiency. 
-For example: `.._kw(4 * 0.93)` for a 4kw system where expected combined inverter and cabling efficiency is 93%.
+--- 
 
+### Radiation table sourcing
 
-### Module elevation
-```python
-pvfc.set_module_elevation(8)
-```
+The second half of step 1. consists of choosing the source for the radiation data used by the PV model. Regardless of
+which source is used, the result should be a pandas dataframe with datetime index and radiation components 
+[dni, dhi, ghi] as dataframe columns. 
 
-Module elevation is used for estimating the wind speed at the panels. The wind speed reported in weather forecasts
-is typically wind at 2 meters, but if the panels are at 10m, (maybe on top of a building?) the panels likely experience a higher wind speed.
-The equation used is as follows:
++ The FMI open data returns additional variables [wind, T, albedo] which increase the accuracy of the model.
 
-```python
-wind_speed = (module_elevation / 10) ** 0.1429 * wind # 0.1429 is terrain surface roughness 
-```
++ Both FMI open data and PVlib require a valid geolocation.
 
-
-- Unit is meters. Measured from local ground level. 
-- Module elevation is used to estimate the wind speed at panel altitude.
++ With external data, the required columns are [dni, dhi, ghi] but one, two or all three of the additional variables
+[wind, T, albedo] can also be included.
 
 
 
----
+```mermaid
+ stateDiagram-v2
+     
+     classDef constant stroke:red
+     classDef optional_constant stroke:orange
+     classDef conditional_constant stroke:yellow
+     classDef df stroke:blue
+     
+     class geo, angles, size constant
+     class radw_table,external_data,pvlib_rad_table,  rad_table df
+     class elevation optional_constant
+     class air_t, albedo, wind conditional_constant
+     
 
-## Additional inputs
-These values are only used if the given weather data does not contain the values as columns. Values are:
+     geo : Geolocation
 
-- Albedo
-- Wind speed
-- Air temperature
-
-Setting these values does not do anything if using `pvfc.get_default_fmi_forecast()` or any other fmi -function as
-the FMI forecasts contain albedo, wind speed and air temperature.
-
-
-### Wind speed
-```python
-pvfc.set_default_wind_speed(3)
-```
-
-- In meters per second, measured at 10m elevation.
-- Default value is 2m/s.
-
-### Air temperature
-```python
-pvfc.set_default_air_temp(-5)
-```
-- In Celsius.
-- Default value 20C.
-- Panel temperature is always air temperature + some extra.
-- Correct air temperature becomes more important at 15C and higher as temperature induced losses start becoming
-higher.
-
-### Albedo
-```python
-pvfc.set_default_albedo(0.6)
-```
-- Ground reflectivity.
-- Varies depending on the season as snow, grass and so on influence albedo.
-- Albedo values matter more when tilt of panels increase.
-- Albedo of the ground in front of the panels is the actual albedo that matters.
-- Actual relevant area varies depending on panel elevation and terrain.
-- 0 for completely black ground which does not reflect any light at all. 1 for 
-a perfect reflector.
-- Values between 0.15 and 0.8 are fairly reasonable.
-- Wikipedia has a list of albedo values for differing materials at https://en.wikipedia.org/wiki/Albedo.
+     
+     pvlib : PVlib
+     fmi: FMI open data
+     
+     user: User input
+     
+     radw_table : Radiation and weather table
+     rad_table : Radiation table
+     pvlib_rad_table : PVlib radiation table
+     
+     fmi_path : Option 1. FMI open data
+     pvlib_path : Option 2. PVlib
+     external_data: External radiation data
+     
+     ext_path: Option 3. External data
 
 
+     
 
----
+     geo --> pvlib_path
+     geo -->fmi_path
+     
 
-## Tricks with inputs
-
-**Wind speed**, **air temperature** and **module elevation** do not have to be accurate, and using false values can even be
-beneficial in some situations.
-
-- With FMI-based forecasts, air temperature and wind speed are not adjustable. However, if
-the panels are located on a beach or on an open plain, it may make sense to use a higher than actual module elevation
-to compensate for the exposed location. 
-
-- Roof mounted panels which are flat against the roof may experience lower wind speeds and thus using a lower
-than actual module elevation can make sense.
-
-- If module elevation is set to 10 meters, the wind speed equation reduces nicely:
-
-    `wind_speed = (module_elevation / 10) ** 0.1429 * wind`
+     state fmi_path {
+         fmi --> radw_table : .get_default_fmi_forecast()
+     }
+     
+     state pvlib_path {
+          pvlib --> pvlib_rad_table : .get_default_clearsky_estimate()
+     }
+     
+     state ext_path{
+         user --> external_data : .process_radiation_df(radiation_data)
+     }
     
-    `= (10 / 10) ** 0.1429 * wind` 
-    
-    `= 1 ** 0.1429 * wind` 
-    
-    `= 1 * wind` 
-    
-    `= wind` 
+     
+     fmi_path -->rad_table
+     pvlib_path --> rad_table
+     ext_path --> rad_table
+     
 
-    This means that if you have a dataset with wind speed measured next to the panels, you can set module elevation
-    to 10m and the exact given wind speed will be used for panel temperature estimation.
-
-
----
-
-# Understanding data tables
-The PV model uses pandas dataframes in order to store pass on radiation and weather data. These
-data frames have to contain specific columns and the columns have to be of specific types in order for the
-model to be able to process them. This section explains them.
-
-
-## CSV content example
-This is what a full .csv containing all the possible inputs can look like. The lowest amount of input variables
-the system can take would contain variables **time**, **dni**, **dhi**, **ghi**.
-
-
-```commandline
-time,dni,dhi,ghi,T,wind,albedo
-2024-05-31 23:30:00+00:00,0.000,0.000,0.000,21.539,2.794,0.130
-2024-06-01 00:30:00+00:00,0.000,0.000,0.000,21.723,2.958,0.130
-2024-06-01 01:30:00+00:00,0.000,8.871,8.871,21.244,3.396,0.097
-2024-06-01 02:30:00+00:00,95.500,54.205,65.636,21.223,3.238,0.096
-2024-06-01 03:30:00+00:00,458.266,66.915,173.244,21.469,3.639,0.096
 ```
 
-### Missing radiation components
-If the data available only contains two of the radiation components, the third can be calculated
-based on the two first values. This requires some geometric trickery and the method varies
-on the two known values.
 
-## CSV reading example
-A such .csv file can be loaded into the system with the following lines(borrowing from [example 3](examples.md)):
-````python
-# reading external radiation data csv and creating a dataframe
-radiation_data = pd.read_csv("external_radiation_data.csv", index_col="time", parse_dates=["time"])
+## 2. Irradiance transposition
 
-print("Radiation dataframe")
-print_full(radiation_data)
+The radiation table from step 1. should contain DNI, DHI and GHI radiation values. These three values
+tell us the radiation at a specific location measured by three different methods and irradiance transposition 
+is the process of calculating how much of the radiation reaches the panel surface. 
 
-print("Index type:")
-print(type(radiation_data.index))
-print("Index value type:")
-print(type(radiation_data.index[0]))
-print(radiation_data.index[0].tz)
+**Components**
+
+**DNI** is the direct normal irradiance. This can be measured by a sun tracking tube where the radiation per unit of 
+surface area is measured at the end of the tube. This tube is used to block radiation from the atmosphere from
+influencing the results. DNI is the most significant of the three radiation components. DNI is used for calculating
+the direct solar radiation on the PV panel surface.
+
+
+**DHI** is the direct horizontal irradiance. This is measured with a similar instrument as DNI, but the tracker actively
+block direct solar irradiance from reaching the instrument. This is done so that only the radiation scattered by the 
+atmosphere is measured. DHI is used when calculating radiation scattered from the atmosphere.
+
+**GHI** is the global horizontal irradiance. This is the total radiation reaching a horizontal plane at measuring location.
+GHI measurements do not require a tracker. GHI is used when calculating radiation scattered from the ground directly
+to the panel surface. 
+
+
+**Physical phenomena**
+````mermaid
+
+stateDiagram-v2
+    sun: Sun
+    
+    ground: Ground
+    
+    atmosphere: Atmosphere
+    
+    panel: Panel surface
+    
+    
+    sun --> ground 
+    sun --> panel : Direct solar radiation
+    sun --> atmosphere 
+    ground --> panel : Ground reflected radiation
+    atmosphere --> panel : Atmosphere scattered radiation
+
+
 ````
 
-Resulting print:
-```commandline
-Radiation dataframe
-                                 dni        dhi        ghi          T       wind     albedo
-time                                                                                       
-2024-05-31 23:30:00+00:00       0.00       0.00       0.00      21.54       2.79       0.13
-2024-06-01 00:30:00+00:00       0.00       0.00       0.00      21.72       2.96       0.13
-2024-06-01 01:30:00+00:00       0.00       8.87       8.87      21.24       3.40       0.10
-2024-06-01 02:30:00+00:00      95.50      54.20      65.64      21.22       3.24       0.10
-2024-06-01 03:30:00+00:00     458.27      66.92     173.24      21.47       3.64       0.10
-2024-06-01 04:30:00+00:00     590.50      84.46     292.00      21.91       3.97       0.10
-...
 
+**Transposition model**
 
-Index type:
-<class 'pandas.DatetimeIndex'>
-Index value type:
-<class 'pandas.Timestamp'>
-UTC
+As the geometry is different with all the radiation components, three transposition functions are required. The data
+flow is approximately as shown in the diagram below. 
+
+```mermaid
+
+stateDiagram-v2
+    
+    classDef constant stroke:red
+     classDef optional_constant stroke:orange
+     classDef conditional_constant stroke:yellow
+     classDef df stroke:blue
+     
+     
+     class dni, dhi, ghi, dni_poa, ghi_poa, dhi_poa, time df
+     class panel_angles, geo constant 
+     
+     time : Time
+     geo : Geolocation
+    
+    dni : dni
+    dhi : dhi
+    ghi : ghi
+    perez : DHI transposition model
+    dni_fun : DNI transposition model
+    ghi_fun : GHI transposition model
+    albedo : Albedo
+    sun_pos : Sun tilt and azimuth
+    dni_poa : dni_poa
+    dhi_poa : dhi_poa
+    ghi_poa : ghi_poa
+    panel_angles : Panel angles
+    
+    
+    time --> sun_pos
+    geo --> sun_pos
+    
+    
+    dhi --> perez
+    panel_angles --> perez
+    sun_pos --> perez
+    
+    perez --> dhi_poa
+    
+    
+    sun_pos --> dni_fun
+    panel_angles -->dni_fun
+    dni --> dni_fun
+    
+    dni_fun--> dni_poa
+    
+    
+    panel_angles--> ghi_fun
+    ghi --> ghi_fun
+    albedo -->ghi_fun
+    ghi_fun--> ghi_poa
 ```
-**Notes:**
-- The time values can also be of type python.datetime and this should still work without issues. Other
-time formats like numpy.datetime64 are likely to cause issues. 
-- Time inputs should always be in UTC time. Outputs will also always be in UTC time.
+
+New dataframe values from the transposition phase are [dni_poa, dhi_poa, ghi_poa]. These values are kept separate
+as while they do represent radiation on panel surface, reflective losses are still not accounted for and different
+equations are required for each _plane of array_ transposed radiation value.
+
+The transposition models 
+https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/
+
+## Step 3. Reflection estimation
 
 
 
 
-## Extended output tables
-The system has functionality built in for keeping 
 
 
-```commandline
-                                 dni        dhi        ghi          T       wind     albedo  cloud_cover    dni_poa    dhi_poa    ghi_poa        poa     dni_rc     dhi_rc     ghi_rc  poa_ref_cor  module_temp     output
-time                                                                                                                                                                                                                      
-2024-05-31 23:30:00+00:00       0.00       0.00       0.00      21.54       2.79       0.13            0       0.00       0.00       0.00       0.00       0.00       0.00       0.00         0.00        21.54       0.00
-2024-06-01 00:30:00+00:00       0.00       0.00       0.00      21.72       2.96       0.13            0       0.00       0.00       0.00       0.00       0.00       0.00       0.00         0.00        21.72       0.00
-2024-06-01 01:30:00+00:00       0.00       8.87       8.87      21.24       3.40       0.10            0       0.00       8.52       0.01       8.54       0.00       8.13       0.01         8.14        21.45      85.43
-2024-06-01 02:30:00+00:00      95.50      54.20      65.64      21.22       3.24       0.10            0      17.06      56.12       0.11      73.28      11.53      53.51       0.06        65.11        22.91   1,031.24
-2024-06-01 03:30:00+00:00     458.27      66.92     173.24      21.47       3.64       0.10            0     152.15      77.94       0.28     230.37     133.54      74.32       0.16       208.02        26.74   4,018.16
-2024-06-01 04:30:00+00:00     590.50      84.46     292.00      21.91       3.97       0.10            0     285.22     101.12       0.48     386.81     272.05      96.42       0.28       368.75        31.08   7,347.98
-```
 
-- **time:** pandas.Timestamp or python datetime. In UTC
-- **dni:** Direct normal irradiance. This describes the amount of direct sunlight on a plane which tracks the
-movement of the Sun without atmosphere scattered light. Unit: W/m²
 
-- **dhi:** Diffuse horizontal irradiance. This is the amount of atmosphere scattered light on a horizontal plane
-with direct sunlight being blocked. Unit: W/m²
-- **ghi:** Global horizontal irradiance. This is the total amount of light on a horizontal surface, sum of direct and
-atmosphere scattered light. Unit: W/m²
-- **T:** Air temperature in Celsius.
-- **wind:** Wind speed at 10m in meters per second. 
-- **albedo:** Ground reflectivity. Range 0 to 1.
-- **cloud_cover:** Value in range 0 to 100, 100 means a fully cloudy weather, 0 is perfectly clear.
-- **dni_poa:** DNI radiation transposed to the panel surface. Unit: W/m²
-- **dhi_poa:** DHI radiation transposed to the panel surface. Unit: W/m²
-- **ghi_poa:** GHI radiation transposed to the panel surface. Unit: W/m²
-- **poa:** Sum of **dni_poa**, **dhi_poa**, **ghi_poa**, not actually used for anything. This describes the amount of
-radiation reaching the surface of the PV panels but this specific value should not be used. Unit: W/m²
-- **dni_rc:** DNI radiation absorbed by the PV panels. Comes from feeding **DNI_poa**(direct sunlight component of
-radiation on panel surface) to a function which estimates how much light is lost due to panel surface reflectivity. Unit: W/m²
 
-- **dhi_rc:** DHI radiation absorbed by the PV panels. Comes from feeding **DHI_poa**(atmosphere scattered component of
-radiation on panel surface) to a function which estimates how much light is lost due to panel surface reflectivity. Unit: W/m²
-- **ghi_rc:** GHI radiation absorbed by the PV panels. Comes from feeding **GHI_poa**(ground reflected component of
-radiation on panel surface) to a function which estimates how much light is lost due to panel surface reflectivity. Unit: W/m²
-- **poa_ref_cor:** Amount of light absorbed by the PV panels. Unit: W/m²
-- **module_temp:** Modeled module temperature, based on air temperature(**T**), wind speed(**wind**) and absorbed
-radiation **(poa_ref_cor**).
-- **output:** Modeled system output. Calculated based on module temperature, absorbed radiation and system size.
 

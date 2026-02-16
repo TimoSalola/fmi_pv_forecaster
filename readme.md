@@ -43,8 +43,9 @@ forecast for the closest available grid point is used.
 ---
 ## Clear sky forecasts
 
-This package also contains functions for simulating clear sky PV output using simulated radiation values from
-PVlib. These forecasts do not have geographical restrictions, and they can be computed for any time interval with any
+This package also contains functions for simulating clear sky PV output using simulated radiation values using models
+built into PVlib.
+ These forecasts do not have geographical restrictions, and they can be computed for any time interval with any
 time resolution. Another benefit is that computing them does not require internet access.
 
 The downsides of clear sky forecasts are the complete lack of weather-awareness. The PV model requires air temperature
@@ -88,12 +89,19 @@ as it could be with the challenging cloud situation taken into consideration.
 
 
 # Usage of external data instead of FMI open data
-The PV model was programmed in a way which makes usage of external radiation data as easy as possible. If you have
-access to DNI, DHI and GHI radiation tables from historical forecasts or forecasting service, you can feed *"standard"* format
-dataframes into the PV model. This way you can use the same PV model for your own forecasts or even research purposes
-without having to implement the PV model yourself.
+The PV model was programmed in a way which makes usage of external radiation data possible. If you have
+access to DNI, DHI and GHI radiation tables from a forecasting service or some other source, these 
+tables can be used to simulate PV system performance.
 
-See [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for an example on using data from a .csv file as input.
+Reasons for using external data include forecasting PV output with weather and radiation data from alternative
+weather forecasting services. And research where you might have either historical forecasts or 
+on-site measurements for a specific location.
+
+
+See [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for how to use radiation
+values from a .csv file as model inputs.
+
+
 
 
 ---

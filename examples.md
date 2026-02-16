@@ -218,8 +218,10 @@ Here the input dataframe has the following columns:
 * wind = wind speed [m/s]
 * albedo = ground reflectivity [0-1]
 
-Out of the input columns, T, wind and albedo are optional. These have in built default values which will be used when
-the dataframe doesn't have the variables in the dataframe. The constants can also be manually as was done in example 2.
+The input data has optional columns [T, wind, albedo]. These have in built default values which will be used when
+the dataframe doesn't have the variables in the dataframe. The constants can also be manually set as was done in
+[example 2](#example-2-plotting-clearsky-and-fmi-weather-based-forecasts-into-the-same-plot).
+
 
 
 ---
@@ -233,12 +235,17 @@ and this obviously causes issues.
 
 There are a few ways of working around the issue, none of which are perfect. This package has a built-in linear interpolation
 -based solution for the problem. Linear interpolation is the process of taking two datapoints, eq. 12:30 and 13:30, drawing a line between them
-and checking what the value is for 12:46. Linear interpolation doesn't have any time constraints and while the function can be used to get power(or any other) value
-at 15 minute resolution, calculating a new power value for every second or every 12th second would also be possible. 
+and checking what the value is for 12:46(or any other point in time between the two).
+Linear interpolation doesn't have any time constraints and while the function can be used to get power or any other value
+at 15 minute resolution, calculating a new power value for any moment in time within the forecast interval is possible.
+
+
+
 
 **The downside** with linear interpolation is that the actual physical transitioning between two states is not always
-linear and as the data from FMI open data is already averaged, complex and variable changes in weather are reduced into
-linear transitions between two states. Meteorologists could also say that the average of two weather states is not a valid
+linear. And as the data from FMI open data is already averaged, complex and variable changes in weather are reduced into
+linear transitions between two states.
+Meteorologists could also say that the average of two weather states is not a valid
 state of weather, even if it often represents actual weather quite well.
 
 
