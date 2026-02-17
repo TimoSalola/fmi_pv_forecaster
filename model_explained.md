@@ -1,8 +1,27 @@
 # PV model explained
 This document explains the steps of the PV model. The document is split into two sections, model overview for those who
-would like to understand the basics and detailed description for those who want to use the model in research applications.
+would like to understand the basics and a more detailed description for those who want to use the model in research applications.
 
 
+<!-- TOC -->
+* [PV model explained](#pv-model-explained)
+  * [Model overview](#model-overview)
+    * [Model as a python functions](#model-as-a-python-functions)
+* [Detailed description](#detailed-description)
+  * [Step 1. Data input](#step-1-data-input)
+    * [Step 1.1. Constant input](#step-11-constant-input)
+    * [Step 1.2. Radiation table sourcing](#step-12-radiation-table-sourcing)
+  * [Step 2. Irradiance transposition](#step-2-irradiance-transposition)
+  * [Step 3. Reflection estimation](#step-3-reflection-estimation)
+  * [Step 4. Total absorbed irradiance](#step-4-total-absorbed-irradiance)
+  * [Step 5. Panel temperature estimation](#step-5-panel-temperature-estimation)
+  * [Step 6. Output estimation](#step-6-output-estimation)
+* [2. Extras](#2-extras)
+  * [2.1. Adding shadow modeling to the PV model](#21-adding-shadow-modeling-to-the-pv-model)
+  * [2.2. Snow related issues](#22-snow-related-issues)
+    * [2.2.1. Snow sliding](#221-snow-sliding)
+    * [2.2.2. Snow reflections](#222-snow-reflections)
+<!-- TOC -->
 
 
 ## Model overview
@@ -116,11 +135,11 @@ def process_radiation_df(data):
 
 # Detailed description
 
-Diagram guide:
+Diagram colors guide:
 - Red : Required constant.
 - Orange : Optional constant.
-- Yellow : Conditional constant(only used if DF doesn't contain value).
-- Blue : Existing dataframe column.
+- Yellow : Conditional constant. Only used if DF doesn't contain corresponding value.
+- Blue : Existing dataframe column. Constants used when value is missing.
 - Green : New dataframe column added by this step.
 
 ---
@@ -134,7 +153,7 @@ where the user chooses which radiation data source the model uses. The two built
 but the user can also choose to use their own radiation dataframes.
 
 --- 
-### Constant input
+### Step 1.1. Constant input
 
 
 This is the first half of step 1. Here required(red), optional(orange) and conditional(yellow) parameters are 
@@ -202,7 +221,7 @@ constants. Default constants are tuned for regular midsummer conditions.
 
 --- 
 
-### Radiation table sourcing
+### Step 1.2. Radiation table sourcing
 
 The second half of step 1. consists of choosing the source for the radiation data used by the PV model. Regardless of
 which source is used, the result should be a pandas dataframe with datetime index and radiation components 
@@ -276,11 +295,12 @@ which source is used, the result should be a pandas dataframe with datetime inde
 
 ```
 > Note: python function calls in the graph above are somewhat symbolical. The shown functions do not only 
-> give the model a radiation table, but they also start the processing pipeline.
+> give the model a radiation table, but they also start the processing pipeline. Python functions will not be named
+> in further steps as they are not accessible to the user.
 
 ---
 
-## 2. Irradiance transposition
+## Step 2. Irradiance transposition
 
 The radiation table from step 1. should contain DNI, DHI and GHI radiation values. These three values
 tell us the radiation at a specific location measured by three different methods and irradiance transposition 
@@ -308,26 +328,7 @@ to the panel surface.
 
 
 **Physical phenomena**
-````mermaid
 
-stateDiagram-v2
-    sun: Sun
-    
-    ground: Ground
-    
-    atmosphere: Atmosphere
-    
-    panel: Panel surface
-    
-    
-    sun --> ground 
-    sun --> panel : Direct solar radiation
-    sun --> atmosphere 
-    ground --> panel : Ground reflected radiation
-    atmosphere --> panel : Atmosphere scattered radiation
-
-
-````
 <img src="readme_images/irradiancetypes.png" height="300"/>
 
 
@@ -336,9 +337,6 @@ stateDiagram-v2
 As the geometry is different with all the radiation components, three transposition functions are required. The data
 flow showing the used parameters and function is approximately as shown in the diagram below.
 
-- Blue : value from current dataframe column.
-- Red : constant given by the user.
-- Green : added dataframe column. 
 
 ```mermaid
 
@@ -401,8 +399,8 @@ stateDiagram-v2
     ghi_fun--> ghi_poa
 ```
 
-[dni_poa, dhi_poa, ghi_poa] values are kept separate
-as while they do represent radiation on panel surface, reflective losses are still not accounted for and different
+[dni_poa, dhi_poa, ghi_poa] values are not combined at the end into a single POA value as while they do represent
+radiation on panel surface, reflective losses are still not accounted for and different
 equations are required for each _plane of array_ transposed radiation value.
 
 The transposition models used here are described by Sandia on their page. The DHI model is the most complex and the 
@@ -417,7 +415,8 @@ descriptions on Sandia's web page.
 ## Step 3. Reflection estimation
 
 The direction of radiation is different for the 3 radiation components and thus we need 3 relfection estimation
-functions. The functions used here are from Martin & Ruiz 2001 paper which is excellent by the way.
+functions. The functions used here are from Martin & Ruiz 2001 paper which is an excellent example of how to write
+a test-based research paper.
 
 ```mermaid
 
@@ -525,7 +524,7 @@ stateDiagram-v2
 
 
 ---
-## 5. Panel temperature estimation
+## Step 5. Panel temperature estimation
 
 Panel temperature is estimated with King 2004 model. 
 
@@ -582,6 +581,8 @@ and higher absorbed radiation values increase it.
 > If the dataframe doesn't contain wind column, the model will use a constant wind speed instead.
 
 
+
+
 **Sources:**
 
 D.~King, J.~Kratochvil, and W.~Boyson,
@@ -594,6 +595,7 @@ PhD thesis (Sandia Naitional Laboratories, 2004).
 
 Final output of the PV model is estimated by using Huld 2010 model. This same model is sometimes referred
 as the Huld 6k model as it has 6 constants, k1, k2 ... k6 which can be used to tune the model.
+
 
 The constants used are:
 ```python
@@ -657,9 +659,15 @@ the Huld model was not fitted to data which would have included low radiation va
 Despite the odd behavior at 0 to 50W and despite being fitted to panel temperatures of 20C or higher, the Huld model
 has proven to work well with our own data.
 
-
 <img src="readme_images/huld_efficiency.png"/>
 
+**Improvements?** 
+
+The Huld model could be fitted to our data for more accurate low temperature and radiation modeling, but
+this comes with the risk of overfitting.
+
+In a perfect world, we would have a solar panel efficiency model which is based on measurements at a
+wide range of temperatures, radiations and panel types.
 
 **Sources:**
 
@@ -669,6 +677,53 @@ Mapping the performance of PV modules, effects of module type and
 data averaging, Solar Energy, 84 324--338 (2010).
 
 ---
+
+
+
+
+# 2. Extras
+
+
+This section contain tips and things we have noticed while using the PV model.
+
+
+## 2.1. Adding shadow modeling to the PV model
+If you want to model shading from trees or buildings with the PV model, the results should be 
+accurate enough if you just
+multiply the `dni` values in the input dataframe by a shading coefficient.
+To do this, you need to figure out how strong the shading is at each moment in time. The hardest bit here is figuring
+out how to generate a shadow map of the PV site. This is not impossible, but we do not currently have any easy methods
+for shadow map generation that we could recommend.
+
+
+## 2.2. Snow related issues
+
+### 2.2.1. Snow sliding
+In Finland and other northern countries, having snow on the panels decreases panel output significantly. The model
+does not take this into account as snow is a complex matter. However, snow has a habit of sliding off the panels when
+panel surface temperature reaches 0 degrees. The moment when this occurs can be modeled with the PV model.
+
+Snow reflects approximately 60% of incoming light away and so if you create a custom forecasting function which multiplies
+`[dni, dhi, ghi]` by 0.6, the panel temperatures contained in the output should be close to actual experienced panel
+temperatures. 
+
+### 2.2.2. Snow reflections
+
+Snow can be highly reflective and nearly vertical south facing PV panels can generate significantly higher amounts
+of power than the PV model suggests. The model does not take this into account, and we are uncertain if this will ever change
+due to the difficulty of the problem.
+
+## 2.3. Missing radiation values
+On-site datasets are often missing either DNI or DHI irradiance. 
+This happens because GHI radiation is easy to measure as it doesn't require a tracker whereas DHI and DNI require trackers.
+If you have 2 of the 3 radiation components, you can use the apparent solar angles and the two known radiation values
+to calculate the missing 3rd radiation parameter. Calculated values are not as accurate as directly measured, but 
+they can still be used.
+
+
+
+
+
 
 
 
