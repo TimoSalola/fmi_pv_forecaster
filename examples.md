@@ -400,7 +400,7 @@ azimuth_2 = 270
 size_2 = 2 # 2kw
 
 # setting common variables for the PV site
-pvfc.set_location(65.013297,25.4647086) # The exact location of Toripoliisi in Oulu, finland
+pvfc.set_location(65.013297,25.4647086) # The exact location of Toripoliisi in Oulu, Finland
 pvfc.set_default_air_temp(15)
 pvfc.set_default_albedo(0.2)
 pvfc.set_clearsky_fc_timestep(5)

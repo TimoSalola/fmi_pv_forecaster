@@ -138,7 +138,7 @@ def process_radiation_df(data):
 Diagram colors guide:
 - Red : Required constant.
 - Orange : Optional constant.
-- Yellow : Conditional constant. Only used if DF doesn't contain corresponding value.
+- Yellow : Conditional constant. Only used if dataframe doesn't contain corresponding value.
 - Blue : Existing dataframe column. Constants used when value is missing.
 - Green : New dataframe column added by this step.
 
@@ -577,7 +577,7 @@ positive value based on absorbed radiation(poa_rc) and wind speed. Higher wind v
 and higher absorbed radiation values increase it.
 
 > If the dataframe doesn't contain T column, the model will use a constant air temperature instead.
-> 
+
 > If the dataframe doesn't contain wind column, the model will use a constant wind speed instead.
 
 
