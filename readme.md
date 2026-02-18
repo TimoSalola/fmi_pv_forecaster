@@ -12,6 +12,10 @@ forecasts can be used for testing purposes, system monitoring or in cases when i
 
 The PV model can also be used with external data sources by feeding it dataframes with the required radiation components.
 
+See [Examples](examples.md) for examples on how to use the package.
+[Model explanation](model_explained.md) for details on how the PV model works.
+And [Package documentation](package_documentation.md) for a programmer-oriented description of functions built
+into the package. 
 
 ---
 ## FMI PV forecasts

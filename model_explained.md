@@ -182,10 +182,10 @@ constants. Default constants are tuned for regular midsummer conditions.
      classDef conditional_constant stroke:yellow
      classDef df stroke:blue
      
-     class geo, angles, size constant
+     class geo, angles  constant
      class radw_table,external_radiation_table,pvlib_rad_table,  rad_table df
      class elevation optional_constant
-     class air_t, albedo, wind conditional_constant
+     class air_t, albedo, wind, size conditional_constant
      
      user: User input
      
@@ -692,7 +692,7 @@ If you want to model shading from trees or buildings with the PV model, the resu
 accurate enough if you just
 multiply the `dni` values in the input dataframe by a shading coefficient.
 To do this, you need to figure out how strong the shading is at each moment in time. The hardest bit here is figuring
-out how to generate a shadow map of the PV site. This is not impossible, but we do not currently have any easy methods
+out how to generate a shadow map of the PV site. This is challenging and we do not currently have any easy methods
 for shadow map generation that we could recommend.
 
 
@@ -701,8 +701,7 @@ for shadow map generation that we could recommend.
 ### 2.2.1. Snow sliding
 In Finland and other northern countries, having snow on the panels decreases panel output significantly. The model
 does not take this into account as snow is a complex matter. However, snow has a habit of sliding off the panels when
-panel surface temperature reaches 0 degrees. The moment when this occurs can be modeled with the PV model.
-
+panel surface temperature reaches 0 degrees. The moment when this occurs can be modeled with the PV model. 
 Snow reflects approximately 60% of incoming light away and so if you create a custom forecasting function which multiplies
 `[dni, dhi, ghi]` by 0.6, the panel temperatures contained in the output should be close to actual experienced panel
 temperatures. 
@@ -719,6 +718,8 @@ This happens because GHI radiation is easy to measure as it doesn't require a tr
 If you have 2 of the 3 radiation components, you can use the apparent solar angles and the two known radiation values
 to calculate the missing 3rd radiation parameter. Calculated values are not as accurate as directly measured, but 
 they can still be used.
+
+Required functions are somewhat complex and we will leave searching out for one to you.
 
 
 
