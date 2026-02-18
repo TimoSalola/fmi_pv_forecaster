@@ -1,6 +1,5 @@
 # FMI open pv forecast package
 
-
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
 weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for 
 a 66-hour period. These forecasts take panel orientation, panel surface reflections, panel temperature, and other factors
@@ -16,6 +15,28 @@ See [Examples](examples.md) for examples on how to use the package.
 [Model explanation](model_explained.md) for details on how the PV model works.
 And [Package documentation](package_documentation.md) for a programmer-oriented description of functions built
 into the package. 
+
+
+## **Table of contents:**
+<!-- TOC -->
+  * [Installing the package](#installing-the-package)
+  * [FMI PV forecasts](#fmi-pv-forecasts)
+    * [Forecast length and updating frequency](#forecast-length-and-updating-frequency)
+    * [Geographic boundaries](#geographic-boundaries)
+  * [Clear sky forecasts](#clear-sky-forecasts)
+  * [Forecast accuracy](#forecast-accuracy)
+* [Usage of external data instead of FMI open data](#usage-of-external-data-instead-of-fmi-open-data)
+* [Usage example](#usage-example)
+* [Authors and acknowledgements](#authors-and-acknowledgements)
+<!-- TOC -->
+
+
+## Installing the package
+
+As of early 2026, the package is still in development phase. If you would like to try it out, download 
+`fmi_pv_forecast-0.1.0-py3-none-any.whl` from the dist/ folder and install it into your
+python environment. This can be done with the command `pip install --force-reinstall wheel fmi_pv_forecast-0.1.0-py3-none-any.whl`
+After package is installed, it can be imported as shown in the examples.
 
 ---
 ## FMI PV forecasts
