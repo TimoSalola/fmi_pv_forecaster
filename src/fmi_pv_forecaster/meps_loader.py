@@ -26,7 +26,7 @@ cache_enabled = True
 last_load_time = None
 cached_data = None
 
-min_seconds_between_fmi_calls = 8
+min_seconds_between_fmi_calls = 60
 
 
 def clear_cache():
