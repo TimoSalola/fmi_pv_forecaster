@@ -49,7 +49,11 @@ def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame,latitude, longitude, 
 
     # handling dni and dhi
     irradiance_df["dni_poa"] = __project_dni_to_panel_surface_using_time_fast(irradiance_df["dni"], irradiance_df.index,latitude, longitude, tilt, azimuth)
+
+
+    # perez dhi function, this had continuity issues before it was changed to modified perez
     irradiance_df["dhi_poa"] = __project_dhi_to_panel_surface_perez_fast(irradiance_df.index, irradiance_df["dhi"], irradiance_df["dni"],latitude, longitude, tilt, azimuth)
+
 
     # and finally ghi
     if "albedo" in irradiance_df.columns:
@@ -60,6 +64,7 @@ def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame,latitude, longitude, 
 
     # adding the sum of projections to df as poa
     irradiance_df["poa"] = irradiance_df["dhi_poa"] + irradiance_df["dni_poa"] + irradiance_df["ghi_poa"]
+
 
     return irradiance_df
 
@@ -115,7 +120,7 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     """
     Alternative dhi model,
     Calculated internally by pvlib, pvlib documentation at:
-    https://pvlib-python.readthedocs.io/en/stable/reference/generated/pvlib.irradiance.perez.html
+    https://pvlib-python.readthedocs.io/en/stable/reference/generated/pvlib.irradiance.perez_driesse.html
     """
 
     # function parameters
@@ -134,7 +139,11 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     # air mass
     airmass = astronomical_calculations.get_air_mass_fast(time, latitude, longitude)
 
-    dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,  solar_zenith, solar_azimuth, airmass, return_components=False)
+    # old perez function
+    #dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,  solar_zenith, solar_azimuth, airmass, return_components=False)
+
+    # modified perez
+    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth,dhi, dni, dni_extra,  solar_zenith, solar_azimuth, airmass, return_components=False)
 
     return dhi_perez
 

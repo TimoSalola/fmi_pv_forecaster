@@ -345,12 +345,11 @@ def get_fmi_forecast_for_interval(interval_start, interval_end):
 Fixed interval forecast functions begin here
 """
 
-def get_default_fmi_forecast():
+def __get_fmi_forecast_rad_data():
     """
-    This function returns the whole 66~ish hour FMI forecast available at this moment in time.
+    This is a helper function for getting radiation data from FMI.
     :return:
     """
-
     interval_start = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=3)
     # the line above creates a timezone naive utc timestamp. If timezone is included, server will return errors.
     # if time is local time, starting values will be wrong
@@ -375,10 +374,47 @@ def get_default_fmi_forecast():
 
     data = __get_fmi_forecast_for_interval(interval_start, interval_end)
 
+    return data
+
+def get_default_fmi_forecast():
+    """
+    This function returns the whole 66~ish hour FMI forecast available at this moment in time.
+    :return:
+    """
+
+    # getting the hourly 66 hour forecast
+    data = __get_fmi_forecast_rad_data()
+
     # processing data with our pv model
     data = process_radiation_df(data)
 
     return data
+
+def get_15min_fmi_forecast(interval="15min"):
+
+    """
+    This function generates an interpolated 15minute forecast.
+    """
+
+    # getting hourly forecast
+    data = __get_fmi_forecast_rad_data()
+
+    # resampling to 15 min intervals
+    data = data.resample(interval).asfreq()
+
+    # interpolating nans from resampling
+    data = data.interpolate(method="linear")
+
+    #data = data['2026-02-24 12:00':'2026-02-24 13:00']
+
+    # processing interpolated radiation and weather data with pv model
+    process_radiation_df(data)
+
+    # returning result
+    return data
+
+
+
 
 
 def set_clearsky_fc_timestep(new_timestep):
@@ -557,10 +593,3 @@ def add_local_time_column(df):
     df["local_time"] = idx.tz_convert(tz)
 
     return df
-
-
-
-
-
-
-
