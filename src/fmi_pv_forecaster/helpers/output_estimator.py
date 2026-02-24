@@ -57,7 +57,7 @@ def add_output_to_df(df: pandas.DataFrame) -> pandas.DataFrame:
     # this low, the system would not produce any power and values of 0.0 cause issues as the output model contains
     # logarithms
     df['output'] = df.apply(lambda row: 0.0 if row['poa_ref_cor'] < 0.1 else
-            __estimate_output(row['poa_ref_cor'], row['module_temp']), axis=1)
+                __estimate_output(row['poa_ref_cor'], row['module_temp']), axis=1)
 
     # filling nans
     df['output'] = df['output'].fillna(0.0)

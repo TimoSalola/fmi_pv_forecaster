@@ -44,8 +44,8 @@ def components_to_corrected_poa(DNI_component: float, DHI_component: float, GHI_
     ghi_reflected = __ghi_reflected(tilt)
 
     # POA_reflection_corrected or radiation absorbed by the solar panel.
-    POA_reflection_corrected = ((1 - dni_reflected) * DNI_component + (1 - dhi_reflected) * DHI_component
-                                + (1 - ghi_reflected) * GHI_component)
+    POA_reflection_corrected = ((1 - dni_reflected) * DNI_component + (1 - dhi_reflected) * DHI_component +
+                                (1 - ghi_reflected) * GHI_component)
 
     return POA_reflection_corrected
 

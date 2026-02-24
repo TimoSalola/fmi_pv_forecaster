@@ -521,15 +521,15 @@ def __interpolate_nearest_power_to_time_value(power_df, time_value):
     timestamp2 = None
 
     if minute < 30:
-        timestamp1 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30)
-                      - datetime.timedelta(minutes=60))
+        timestamp1 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30) -
+                      datetime.timedelta(minutes=60))
         timestamp2 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30)
 
     elif minute >= 30:
         timestamp1 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour,
                                        30)
-        timestamp2 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30)
-                      + datetime.timedelta(minutes=60))
+        timestamp2 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30) +
+                      datetime.timedelta(minutes=60))
 
     # distances between given time value and surrounding values
 

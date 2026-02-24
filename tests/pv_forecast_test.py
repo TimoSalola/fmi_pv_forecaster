@@ -449,8 +449,8 @@ def test_setting_of_timestep():
         timedelta_minutes = timedelta.seconds // 60
 
         assert timedelta_minutes == timestep, (
-            "Error with setting timesteps. Timestep should have been " + str(timestep)
-            + " but delta between rows in forecast was " + str(timedelta))
+            "Error with setting timesteps. Timestep should have been " + str(timestep) +
+            " but delta between rows in forecast was " + str(timedelta))
 
     print("Timedelta between rows was " + str(timedelta_minutes))
     print("The set timestep was: " + str(timestep))
@@ -489,8 +489,8 @@ def test_setting_of_time_offset():
         timedelta_minutes = timedelta.seconds // 60
 
         assert timedelta_minutes == timestep, (
-            "Error with setting timesteps and time offsets. Timestep should have been " + str(timestep)
-            + " but delta between rows in forecast was " + str(timedelta))
+            "Error with setting timesteps and time offsets. Timestep should have been " + str(timestep) +
+            " but delta between rows in forecast was " + str(timedelta))
 
     print("Timedelta between rows was " + str(timedelta_minutes))
     print("The set timestep was: " + str(timestep))

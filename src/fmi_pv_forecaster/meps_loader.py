@@ -134,10 +134,10 @@ def collect_fmi_opendata(latitude: float, longitude: float,
     if len(data) == 0:
         raise Exception("FMI open data did not return a forecast with valid values. Check that geolocation is within "
                         "harmonie-arome model area shown in https://en.ilmatieteenlaitos.fi/weather-forecast-models "
-                        "and that requested time interval contains hours between now("
-                        + str(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")) + ") and "
-                        "forecast interval end "
-                        + str((datetime.now(timezone.utc) + timedelta(hours=66)).strftime("%Y-%m-%d %H:%M")))
+                        "and that requested time interval contains hours between now(" +
+                        str(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")) + ") and "
+                        "forecast interval end " +
+                        str((datetime.now(timezone.utc) + timedelta(hours=66)).strftime("%Y-%m-%d %H:%M")))
 
     # print("Got " + str(len(data))+ " values as forecast.")
 
