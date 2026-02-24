@@ -376,44 +376,35 @@ def __get_fmi_forecast_rad_data():
 
     return data
 
-def get_default_fmi_forecast():
+def get_default_fmi_forecast(interpolate=False):
     """
     This function returns the whole 66~ish hour FMI forecast available at this moment in time.
+    Timestamps in the forecast are every 60 minutes with a 30min offset. 12:30, 13:30 and so on, using UTC time.
+    :param interpolate: Default false will skip interpolation. String "15min" will result in interpolated forecasts
+    where power values are at 12:00, 12:15, 12:30...
+
+    Interpolation works nicely with values which divide 60 into integers. 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
     :return:
     """
 
     # getting the hourly 66 hour forecast
     data = __get_fmi_forecast_rad_data()
 
+    # if interpolation is left False, interpolation will not be done
+    if interpolate is not False:
+        # resampling to given time resolution, "15min" perhaps?
+        data = data.resample(interpolate).asfreq()
+
+        # interpolating nans from resampling
+        data = data.interpolate(method="linear")
+        # Note, this function supports other interpolation methods. Got a bunch of errors with them, but in theory
+        # some interpolation functions could result in nicer output.
+
+
     # processing data with our pv model
     data = process_radiation_df(data)
 
     return data
-
-def get_15min_fmi_forecast(interval="15min"):
-
-    """
-    This function generates an interpolated 15minute forecast.
-    """
-
-    # getting hourly forecast
-    data = __get_fmi_forecast_rad_data()
-
-    # resampling to 15 min intervals
-    data = data.resample(interval).asfreq()
-
-    # interpolating nans from resampling
-    data = data.interpolate(method="linear")
-
-    #data = data['2026-02-24 12:00':'2026-02-24 13:00']
-
-    # processing interpolated radiation and weather data with pv model
-    process_radiation_df(data)
-
-    # returning result
-    return data
-
-
 
 
 

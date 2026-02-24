@@ -23,7 +23,6 @@ from .pv_forecaster import get_clearsky_estimate_for_interval
 
 from .pv_forecaster import get_fmi_forecast_at_interpolated_time
 
-from .pv_forecaster import get_15min_fmi_forecast
 
 # toggles
 from .pv_forecaster import set_extended_output
@@ -66,7 +65,6 @@ __all__ = [
     "get_clearsky_estimate_for_interval",
     "get_fmi_forecast_for_interval",
     "get_fmi_forecast_at_interpolated_time",
-    "get_15min_fmi_forecast",
 
     # toggles
     "set_extended_output",
