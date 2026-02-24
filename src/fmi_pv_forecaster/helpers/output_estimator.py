@@ -123,10 +123,10 @@ def __estimate_output(absorbed_radiation: float, panel_temp: float)-> float:
     base = 1
 
     part_k1 = k1 * numpy.log(nrad)
-    part_k2 = k2*(numpy.log(nrad)**2)
+    part_k2 = k2 * (numpy.log(nrad)**2)
     part_k3k4k5 = Tdiff*(k3+k4*numpy.log(nrad) + k5*(numpy.log(nrad)**2))
     # T*(-0.004681+0.000148*log(x) + 0.000169*log(x)²)
-    part_k6 = k6*(Tdiff**2)
+    part_k6 = k6 * (Tdiff**2)
 
     efficiency = base + part_k1+ part_k2 + part_k3k4k5 + part_k6
     efficiency = numpy.maximum(efficiency, min_efficiency)

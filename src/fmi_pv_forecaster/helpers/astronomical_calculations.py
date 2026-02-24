@@ -24,7 +24,6 @@ Author: TimoSalola (Timo Salola).
 """
 
 from datetime import datetime
-import pandas
 import pvlib.atmosphere
 from pvlib import location, irradiance
 
@@ -40,7 +39,7 @@ def get_solar_angle_of_incidence_fast(dt:datetime, latitude, longitude, tilt, az
     """
 
 
-    solar_azimuth, solar_apparent_zenith = get_solar_azimuth_zenit_fast(dt, latitude, longitude)
+    solar_azimuth, solar_apparent_zenith = get_solar_azimuth_zenith_fast(dt, latitude, longitude)
     panel_tilt = tilt
     panel_azimuth = azimuth
 
@@ -49,7 +48,7 @@ def get_solar_angle_of_incidence_fast(dt:datetime, latitude, longitude, tilt, az
 
     # restricting AOI values as projection functions do not expect AOI higher than 90. Should never be lower than 0 but
     # setting a limit anyways
-    angle_of_incidence = angle_of_incidence.clip(lower=0, upper=90)
+    angle_of_incidence = angle_of_incidence.clip(lower = 0, upper = 90)
 
     return angle_of_incidence
 
@@ -62,13 +61,13 @@ def get_air_mass_fast(time: datetime, latitude, longitude)-> float:
     :param time: python datetime
     :return: air mass value, may return nans if AOI is over 90
     """
-    solar_zenith = get_solar_azimuth_zenit_fast(time, latitude, longitude)[1]
+    solar_zenith = get_solar_azimuth_zenith_fast(time, latitude, longitude)[1]
     air_mass = pvlib.atmosphere.get_relative_airmass(solar_zenith)
     return air_mass
 
 
 
-def get_solar_azimuth_zenit_fast(dt: datetime, latitude, longitude)-> (float, float):
+def get_solar_azimuth_zenith_fast(dt: datetime, latitude, longitude)-> (float, float):
     """
     Returns apparent solar zenith and solar azimuth angles in degrees.
     :param dt: time to compute the solar position for.

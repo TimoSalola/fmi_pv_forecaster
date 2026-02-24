@@ -71,7 +71,7 @@ def test_fmi_opendata_data_retrieval():
     print("Out of which " + str(data_len_in_hours_with_no_nans) + " hours remain after removing nans.")
 
 
-    assert data_len_in_hours_with_no_nans >= 64.0 , "Got less than 64 hours of forecast data from FMI forecast service."
+    assert data_len_in_hours_with_no_nans >= 64.0, "Got less than 64 hours of forecast data from FMI forecast service."
 
     print("FMI open data retrieval for this moment complete")
     print("----------")

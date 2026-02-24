@@ -38,7 +38,7 @@ def print_full(x: pandas.DataFrame):
     pd.reset_option('display.float_format')
     pd.reset_option('display.max_colwidth')
 
-def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame,latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
+def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame, latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
     """
     This function takes an irradiance dataframe as input. This dataframe should contain ghi, dni and dhi irradiance values
     These values are then projected to the panel surfaces either using simple geometry or more complex equations.
@@ -49,17 +49,17 @@ def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame,latitude, longitude, 
 
     # handling dni and dhi
     irradiance_df["dni_poa"] = __project_dni_to_panel_surface_using_time_fast(
-        irradiance_df["dni"], irradiance_df.index,latitude, longitude, tilt, azimuth)
+        irradiance_df["dni"], irradiance_df.index, latitude, longitude, tilt, azimuth)
 
 
     # perez dhi function, this had continuity issues before it was changed to modified perez
     irradiance_df["dhi_poa"] = __project_dhi_to_panel_surface_perez_fast(
-        irradiance_df.index, irradiance_df["dhi"], irradiance_df["dni"],latitude, longitude, tilt, azimuth)
+        irradiance_df.index, irradiance_df["dhi"], irradiance_df["dni"], latitude, longitude, tilt, azimuth)
 
 
     # and finally ghi
     if "albedo" in irradiance_df.columns:
-        irradiance_df["ghi_poa"] = __project_ghi_to_panel_surface(irradiance_df["ghi"],tilt, irradiance_df["albedo"])
+        irradiance_df["ghi_poa"] = __project_ghi_to_panel_surface(irradiance_df["ghi"], tilt, irradiance_df["albedo"])
     else:
         #print("Using constant albedo of " + str(fmi_pv_forecast.helpers.default_parameters.albedo) +".")
         irradiance_df["ghi_poa"] = __project_ghi_to_panel_surface(irradiance_df["ghi"], tilt)
@@ -78,7 +78,7 @@ same result.
 """
 
 
-def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,latitude, longitude, tilt, azimuth)-> float:
+def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime, latitude, longitude, tilt, azimuth)-> float:
     """
     :param DNI: Direct sunlight irradiance component in W
     :param dt: Time of simulation
@@ -88,7 +88,7 @@ def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,lati
     """
 
 
-    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt,latitude, longitude,
+    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt, latitude, longitude,
                                                                                      tilt, azimuth)
     output = numpy.abs(__project_dni_to_panel_surface_using_angle(dni, angle_of_incidence))
 
@@ -119,7 +119,7 @@ def __project_dhi_to_panel_surface(dhi: float, tilt)-> float:
 
 
 
-def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float,latitude, longitude,
+def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float, latitude, longitude,
                                               tilt:float, azimuth:float)-> float:
     """
     Alternative dhi model,
@@ -138,7 +138,7 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     surface_azimuth = azimuth
 
     # sun angles
-    solar_azimuth, solar_zenith = astronomical_calculations.get_solar_azimuth_zenit_fast(time, latitude, longitude)
+    solar_azimuth, solar_zenith = astronomical_calculations.get_solar_azimuth_zenith_fast(time, latitude, longitude)
 
     # air mass
     airmass = astronomical_calculations.get_air_mass_fast(time, latitude, longitude)
@@ -148,13 +148,13 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     # solar_zenith, solar_azimuth, airmass, return_components=False)
 
     # modified perez
-    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth,dhi, dni, dni_extra,
+    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                                                solar_zenith, solar_azimuth, airmass, return_components=False)
 
     return dhi_perez
 
 
-def __project_ghi_to_panel_surface(ghi: float,tilt:float,
+def __project_ghi_to_panel_surface(ghi: float, tilt:float,
                                    albedo=fmi_pv_forecaster.helpers.default_parameters.albedo)-> float:
     """
     Equation from
