@@ -48,11 +48,13 @@ def irradiance_df_to_poa_df(irradiance_df:pandas.DataFrame,latitude, longitude, 
     """
 
     # handling dni and dhi
-    irradiance_df["dni_poa"] = __project_dni_to_panel_surface_using_time_fast(irradiance_df["dni"], irradiance_df.index,latitude, longitude, tilt, azimuth)
+    irradiance_df["dni_poa"] = __project_dni_to_panel_surface_using_time_fast(
+        irradiance_df["dni"], irradiance_df.index,latitude, longitude, tilt, azimuth)
 
 
     # perez dhi function, this had continuity issues before it was changed to modified perez
-    irradiance_df["dhi_poa"] = __project_dhi_to_panel_surface_perez_fast(irradiance_df.index, irradiance_df["dhi"], irradiance_df["dni"],latitude, longitude, tilt, azimuth)
+    irradiance_df["dhi_poa"] = __project_dhi_to_panel_surface_perez_fast(
+        irradiance_df.index, irradiance_df["dhi"], irradiance_df["dni"],latitude, longitude, tilt, azimuth)
 
 
     # and finally ghi
@@ -86,7 +88,8 @@ def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,lati
     """
 
 
-    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt,latitude, longitude, tilt, azimuth)
+    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt,latitude, longitude,
+                                                                                     tilt, azimuth)
     output = numpy.abs(__project_dni_to_panel_surface_using_angle(dni, angle_of_incidence))
 
     return output
@@ -116,7 +119,8 @@ def __project_dhi_to_panel_surface(dhi: float, tilt)-> float:
 
 
 
-def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float,latitude, longitude, tilt:float, azimuth:float)-> float:
+def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float,latitude, longitude,
+                                              tilt:float, azimuth:float)-> float:
     """
     Alternative dhi model,
     Calculated internally by pvlib, pvlib documentation at:
@@ -140,15 +144,18 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     airmass = astronomical_calculations.get_air_mass_fast(time, latitude, longitude)
 
     # old perez function
-    #dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,  solar_zenith, solar_azimuth, airmass, return_components=False)
+    #dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,
+    # solar_zenith, solar_azimuth, airmass, return_components=False)
 
     # modified perez
-    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth,dhi, dni, dni_extra,  solar_zenith, solar_azimuth, airmass, return_components=False)
+    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth,dhi, dni, dni_extra,
+                                               solar_zenith, solar_azimuth, airmass, return_components=False)
 
     return dhi_perez
 
 
-def __project_ghi_to_panel_surface(ghi: float,tilt:float, albedo=fmi_pv_forecaster.helpers.default_parameters.albedo)-> float:
+def __project_ghi_to_panel_surface(ghi: float,tilt:float,
+                                   albedo=fmi_pv_forecaster.helpers.default_parameters.albedo)-> float:
     """
     Equation from
     https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/

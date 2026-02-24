@@ -51,7 +51,8 @@ def add_estimated_panel_temperature(df:pandas.DataFrame)-> pandas.DataFrame:
 
 
 
-def temperature_of_module(absorbed_radiation: float, wind: float, module_elevation: float, air_temperature: float) ->float:
+def temperature_of_module(absorbed_radiation: float, wind: float,
+                          module_elevation: float, air_temperature: float) ->float:
     """
     :param absorbed_radiation: radiation hitting solar panel after reflections are accounted for in W
     :param wind: wind speed in meters per second

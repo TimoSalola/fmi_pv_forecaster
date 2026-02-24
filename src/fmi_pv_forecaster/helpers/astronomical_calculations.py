@@ -12,12 +12,12 @@ Functions from this file are mainly required for irradiance transpositions.
 Terminology:
 Zenith(point): point directly above the observer.
 Zenith angle(degrees): distance in degrees from the point above.
-solar apparent zenith(degrees): apparent distance of the sun from the zenith as observed at the location through the atmosphere.
-this is in contrast to solar zenith which is the actual sun position. The difference between these two zenith values is
-caused by the atmosphere.
-AOI(degrees): angle of incidence. Difference between solar panel normal vector and the vector of incoming sunlight. At AOI of 0,
-reflections are minimal and relative surface area is at 1. At 90, panels do not receive direct sunlight and relative
-surface area is 0.
+solar apparent zenith(degrees): apparent distance of the sun from the zenith as observed at the location through the
+atmosphere. This is in contrast to solar zenith which is the actual sun position. The difference between these two
+zenith values is caused by the atmosphere.
+AOI(degrees): angle of incidence. Difference between solar panel normal vector and the vector of incoming sunlight.
+At AOI of 0, reflections are minimal and relative surface area is at 1.
+At 90, panels do not receive direct sunlight and relative surface area is 0.
 Azimuth(degrees): 0 for north, 90 for east, 180 for south, 270 for west.
 
 Author: TimoSalola (Timo Salola).
@@ -29,7 +29,7 @@ import pvlib.atmosphere
 from pvlib import location, irradiance
 
 
-def get_solar_angle_of_incidence_fast(dt:datetime,latitude, longitude, tilt, azimuth)-> float:
+def get_solar_angle_of_incidence_fast(dt:datetime, latitude, longitude, tilt, azimuth)-> float:
     """
     Estimates solar angle of incidence at given datetime. Other parameters, tilt, azimuth and geolocation are read from
     config.py.
@@ -47,7 +47,8 @@ def get_solar_angle_of_incidence_fast(dt:datetime,latitude, longitude, tilt, azi
     # angle of incidence, angle between direct sunlight and solar panel normal
     angle_of_incidence = irradiance.aoi(panel_tilt, panel_azimuth, solar_apparent_zenith, solar_azimuth)
 
-    # restricting AOI values as projection functions do not expect AOI higher than 90. Should never be lower than 0 but setting a limit anyways
+    # restricting AOI values as projection functions do not expect AOI higher than 90. Should never be lower than 0 but
+    # setting a limit anyways
     angle_of_incidence = angle_of_incidence.clip(lower=0, upper=90)
 
     return angle_of_incidence

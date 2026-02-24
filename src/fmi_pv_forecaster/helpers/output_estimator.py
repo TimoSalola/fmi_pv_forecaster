@@ -46,7 +46,8 @@ def add_output_to_df(df: pandas.DataFrame)-> pandas.DataFrame:
     if "poa_ref_cor" not in df.columns:
         raise ValueError("Column poa_ref_cor not found in dataframe, output can not be simulated.")
     if "module_temp" not in df.columns:
-        #print("module temperature variable \"module_temp\" not found in dataframe. Using value from default_parameters: " + str(default_parameters.air_temperature) +"C")
+        #print("module temperature variable \"module_temp\" not found in dataframe.
+        # Using value from default_parameters: " + str(default_parameters.air_temperature) +"C")
         df["module_temp"] = default_parameters.air_temperature
 
 
@@ -56,7 +57,8 @@ def add_output_to_df(df: pandas.DataFrame)-> pandas.DataFrame:
     # this line makes sure the output estimation is not called when per w² radiation is below 0.1W. If the radiation is
     # this low, the system would not produce any power and values of 0.0 cause issues as the output model contains
     # logarithms
-    df['output'] = df.apply(lambda row: 0.0 if row['poa_ref_cor'] < 0.1 else __estimate_output(row['poa_ref_cor'], row['module_temp']),axis=1 )
+    df['output'] = df.apply(lambda row: 0.0 if row['poa_ref_cor'] < 0.1 else
+        __estimate_output(row['poa_ref_cor'], row['module_temp']), axis=1)
 
     # filling nans
     df['output'] = df['output'].fillna(0.0)

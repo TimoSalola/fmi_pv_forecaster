@@ -105,8 +105,8 @@ def set_angles(p_tilt, p_azimuth):
 
 def set_extended_output(extended: bool):
     """
-    Use this function to enable or disable additional variables in the PV forecasts. Most of these variables are irrelevant
-    to users and thus extended output is disabled as default.
+    Use this function to enable or disable additional variables in the PV forecasts.
+    Most of these variables are irrelevant to users and thus extended output is disabled as default.
     :param extended: True -> additional variables will be given, False -> additional variables will be hidden.
     :return:
     """
@@ -116,7 +116,8 @@ def set_extended_output(extended: bool):
 def set_nominal_power_kw(nominal_power: float):
     """
     This function sets the power rating of the PV system.
-    :param nominal_power: Advertised power output of the PV system in standard conditions(perfect weather, direct sunlight)
+    :param nominal_power: Advertised power output of the PV system in standard conditions
+    (perfect weather, direct sunlight)
     :return: None
     """
     global power_rating
@@ -131,7 +132,8 @@ def set_default_air_temp(air_temp_c: float):
     Air temperature influences panel temperature which in turn changes panel efficiency.
     """
     fmi_pv_forecaster.helpers.default_parameters.air_temperature = air_temp_c
-    #print("Air temperature for clearsky simulations set at: " + str(fmi_pv_forecast.helpers.default_parameters.air_temperature)+ "°C")
+    #print("Air temperature for clearsky simulations set at: " +
+    # str(fmi_pv_forecast.helpers.default_parameters.air_temperature)+ "°C")
 
 def set_default_wind_speed(wind_speed_ms: float):
     """
@@ -140,14 +142,16 @@ def set_default_wind_speed(wind_speed_ms: float):
     Wind transfers heat away from PV panels and decreases the difference between air temperature and panel temperature.
     """
     fmi_pv_forecaster.helpers.default_parameters.wind_speed = wind_speed_ms
-    #print("Wind speed for clearsky simulations set at: " + str(fmi_pv_forecast.helpers.default_parameters.wind_speed)+ "ms")
+    #print("Wind speed for clearsky simulations set at: " +
+    # str(fmi_pv_forecast.helpers.default_parameters.wind_speed)+ "ms")
 
 def set_module_elevation(module_elevation_m: float):
     """
     This function will set the physical module elevation(measured from ground, not sea level). Module elevation and
     wind speed at 2m are used together to estimate the wind at panel elevation.
 
-    Higher than actual elevation can be used to compensate for exposed panels and lower than actual for sheltered panels.
+    Higher than actual elevation can be used to compensate for exposed panels and
+    lower than actual for sheltered panels.
 
     If you are processing external data with wind measured at panel elevation, use measured wind as wind value and
     set module elevation as 2m. This way exact wind speed measurements will be used.
@@ -188,8 +192,9 @@ def set_timezone(timezone_string):
     all_viable_timezones = pytz.all_timezones_set
 
     if timezone_string not in all_viable_timezones:
-        raise ValueError("Given timezone \""+ str(timezone_string) + "\" is not in pytz.all_timezones. Timezone should"
-              " be similar to \"Europe/Helsinki\", List of valid timezones can be found at https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
+        raise ValueError("Given timezone \"" + str(timezone_string) + "\" is not in pytz.all_timezones. Timezone should"
+            " be similar to \"Europe/Helsinki\", List of valid timezones can be found at "
+            "https://en.wikipedia.org/wiki/List_of_tz_database_time_zones")
 
     timezone = timezone_string
 
@@ -215,7 +220,8 @@ def __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep
             " valid WGS84 coordinates."
         )
 
-    clearsky_estimate = meps_loader.__get_irradiance_pvlib(site_latitude, site_longitude, interval_start, interval_end, timestep)
+    clearsky_estimate = meps_loader.__get_irradiance_pvlib(site_latitude, site_longitude,
+                                                           interval_start, interval_end, timestep)
 
     return clearsky_estimate
 
@@ -452,7 +458,10 @@ def get_default_clearsky_estimate():
     time_start = datetime.datetime(time_start.year, time_start.month, time_start.day, time_start.hour)
     time_end = time_start + datetime.timedelta(hours=68)
 
-    data = get_clearsky_estimate_for_interval(time_start, time_end, fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_timestep)
+    data = get_clearsky_estimate_for_interval(
+        time_start,
+        time_end,
+        fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_timestep)
 
     return data
 
@@ -513,13 +522,15 @@ def __interpolate_nearest_power_to_time_value(power_df, time_value):
     timestamp2 = None
 
     if minute < 30:
-        timestamp1 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30) - datetime.timedelta(minutes=60)
+        timestamp1 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30) -
+                      datetime.timedelta(minutes=60))
         timestamp2 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour,30)
 
     elif minute >= 30:
         timestamp1 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour,
                                        30)
-        timestamp2 = datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30)+datetime.timedelta(minutes=60)
+        timestamp2 = (datetime.datetime(time_value.year, time_value.month, time_value.day, time_value.hour, 30) +
+                      datetime.timedelta(minutes=60))
 
     # distances between given time value and surrounding values
 

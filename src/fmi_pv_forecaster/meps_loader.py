@@ -99,7 +99,8 @@ def collect_fmi_opendata(latitude:float, longitude:float, start_time:datetime, e
                 #print("Cache age is " + str(seconds_since_cache_update)+ " seconds. Retrieving new data.")
                 pass
             else:
-                #print("Cache is new at " + str(seconds_since_cache_update) + " seconds. Reading data from cache. This line should not print")
+                #print("Cache is new at " + str(seconds_since_cache_update) + " seconds. Reading data from cache.
+                # This line should not print")
                 pass
 
             return cached_data
@@ -139,8 +140,10 @@ def collect_fmi_opendata(latitude:float, longitude:float, start_time:datetime, e
     if len(data) == 0:
         raise Exception("FMI open data did not return a forecast with valid values. Check that geolocation is within "
                         "harmonie-arome model area shown in https://en.ilmatieteenlaitos.fi/weather-forecast-models "
-                        "and that requested time interval contains hours between now("+ str(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M"))+ ") and "
-                        "forecast interval end " + str((datetime.now(timezone.utc) + timedelta(hours=66)).strftime("%Y-%m-%d %H:%M")))
+                        "and that requested time interval contains hours between now("+
+                        str(datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M")) + ") and "
+                        "forecast interval end " +
+                        str((datetime.now(timezone.utc) + timedelta(hours=66)).strftime("%Y-%m-%d %H:%M")))
 
 
 
@@ -220,6 +223,7 @@ def collect_fmi_opendata(latitude:float, longitude:float, start_time:datetime, e
     # df.index = df.index + dt.timedelta(minutes=-30)
 
 
+
     if cache_enabled:
         cached_data = df
         last_load_time = time_now
@@ -227,7 +231,8 @@ def collect_fmi_opendata(latitude:float, longitude:float, start_time:datetime, e
     return df
 
 
-def __get_irradiance_pvlib(latitude, longitude, date_start: datetime, date_end: datetime, minutes_between_measurements=60)-> pandas.DataFrame:
+def __get_irradiance_pvlib(latitude, longitude, date_start: datetime, date_end: datetime,
+                           minutes_between_measurements=60)-> pandas.DataFrame:
     """
     PVlib based clear sky irradiance modeling
     :param date: Datetime object containing a date

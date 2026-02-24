@@ -23,7 +23,8 @@ from fmi_pv_forecaster.helpers import astronomical_calculations
 reflectance_constant = 0.159
 
 
-def components_to_corrected_poa(DNI_component: float, DHI_component: float, GHI_component: float, dt: pandas.DataFrame, latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
+def components_to_corrected_poa(DNI_component: float, DHI_component: float, GHI_component: float,
+                                dt: pandas.DataFrame, latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
     """
     Takes dni, dhi and ghi components of a solar panel projected irradiance and computes how much of the radiation is
     absorbed by the solar panels, in opposed to reflected away.
@@ -74,7 +75,8 @@ def add_reflection_corrected_poa_to_df(df: pandas.DataFrame) -> pandas.DataFrame
     return df
 
 
-def add_reflection_corrected_poa_components_to_df(df: pandas.DataFrame, latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
+def add_reflection_corrected_poa_components_to_df(df: pandas.DataFrame,
+                                                  latitude, longitude, tilt, azimuth)-> pandas.DataFrame:
     """
     def helper_add_dni_ref(h_df):
         #  (1-alpha_BN)*BTN
