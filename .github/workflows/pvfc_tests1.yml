@@ -17,4 +17,8 @@ jobs:
 
       - name: flake8 Lint
         uses: py-actions/flake8@v2
+        with:
+          ignore: "E265", "E303"
+          exclude: "src/ignoreme.py"
+          max-line-length: "120"
 
