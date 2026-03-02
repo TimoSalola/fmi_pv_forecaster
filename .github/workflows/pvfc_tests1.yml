@@ -5,39 +5,25 @@ on: [ push ]
 jobs:
   flake8-lint:
     runs-on: ubuntu-latest
-    name: Lint
     steps:
-      - name: Check out source repository
-        uses: actions/checkout@v4
-
-      - name: Set up Python environment
-        uses: actions/setup-python@v5
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: flake8 Lint
-        uses: py-actions/flake8@v2
+      - uses: py-actions/flake8@v2
         with:
           ignore: "E265,E303,E501,W503,F824"
           max-line-length: "120"
 
-
-  # actual code tests here
-  tests:
+  test-radiation-forecast:
     runs-on: ubuntu-latest
-    name: Tests (pytest)
-
+    name: Testing FMI radiation forecasting functiontee
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-
-      - name: Install project + test deps
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install . pytest
-
-      - name: Run tests
-        run: pytest tests/radiation_forecasting_tests.py -s
+      - run: pytest tests/radiation_forecasting_tests.py -s
