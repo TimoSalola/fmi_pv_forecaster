@@ -8,8 +8,6 @@ import fmi_pv_forecaster.helpers.irradiance_transpositions as irradiance_transpo
 import fmi_pv_forecaster.helpers.astronomical_calculations as astronomical_calculations
 import random
 
-import matplotlib.pyplot as plt
-
 def test_power_output_estimation_function():
     """
     This function tests if the power output estimation function is outputting reasonable values.
