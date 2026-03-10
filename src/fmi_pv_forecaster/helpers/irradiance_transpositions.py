@@ -107,18 +107,11 @@ def __project_dni_to_panel_surface_using_angle(dni: float, angle_of_incidence: f
     return dni * numpy.cos(numpy.radians(angle_of_incidence))
 
 
-def __project_dhi_to_panel_surface(dhi: float, tilt) -> float:
-    """
-    Uses atmosphere scattered sunlight and solar panel angles to estimate how much of the scattered light is radiated
-    towards solar panel surfaces.
-    :param dhi: Atmosphere scattered irradiation.
-    :return: Atmosphere scattered irradiation projected to solar panel surfaces.
-    """
-    return dhi * ((1.0 + math.cos(numpy.radians(tilt))) / 2.0)
+
 
 
 def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float, latitude, longitude,
-                                              tilt: float, azimuth: float) -> float:
+                                              tilt: float, azimuth: float, driesse=True) -> float:
     """
     Alternative dhi model,
     Calculated internally by pvlib, pvlib documentation at:
@@ -141,13 +134,16 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     # air mass
     airmass = astronomical_calculations.get_air_mass_fast(time, latitude, longitude)
 
-    # old perez function
-    # dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,
-    # solar_zenith, solar_azimuth, airmass, return_components=False)
-
     # modified perez
-    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+    if driesse:
+        dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                                                solar_zenith, solar_azimuth, airmass, return_components=False)
+    else:
+        dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                                                   solar_zenith, solar_azimuth, airmass, return_components=False)
+
+    if len(dhi_perez) == 1:
+        return dhi_perez.values[0]
 
     return dhi_perez
 
@@ -166,3 +162,16 @@ def __project_ghi_to_panel_surface(ghi: float, tilt: float,
     step1 = (1.0 - math.cos(numpy.radians(tilt))) / 2
     step2 = ghi * albedo * step1
     return step2  # ghi * config.albedo * ((1.0 - math.cos(numpy.radians(config.tilt))) / 2.0)
+
+"""
+UNUSED FUNCTIONS BELOW
+"""
+
+def __project_dhi_to_panel_surface(dhi: float, tilt) -> float:
+    """
+    Uses atmosphere scattered sunlight and solar panel angles to estimate how much of the scattered light is radiated
+    towards solar panel surfaces.
+    :param dhi: Atmosphere scattered irradiation.
+    :return: Atmosphere scattered irradiation projected to solar panel surfaces.
+    """
+    return dhi * ((1.0 + math.cos(numpy.radians(tilt))) / 2.0)

@@ -1,9 +1,12 @@
+# This file contains automated tests triggers for github. The tests run lint which is a process of finding code style
+# "errors" and actual python pytests.
 name: Test set 1
 
 on: [ push ]
 
 jobs:
   flake8-lint:
+    # code style checks, these are not too important
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,8 +19,9 @@ jobs:
           max-line-length: "120"
 
   test-radiation-forecast:
+    # testing if FMI radiation forecast bit works as expected
     runs-on: ubuntu-latest
-    name: Testing FMI radiation forecasting functiontee
+    name: Testing FMI radiation forecasting functions
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -27,3 +31,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install . pytest
       - run: pytest tests/radiation_forecasting_tests.py -s
+
+  test-small-misc-physics:
+    # testing if transposition functions, power output function and other misc model parts work without obvious failures
+    runs-on: ubuntu-latest
+    name: Testing small model components
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: |
+          python -m pip install --upgrade pip
+          pip install . pytest
+      - run: pytest tests/small_physical_function_tests.py -s

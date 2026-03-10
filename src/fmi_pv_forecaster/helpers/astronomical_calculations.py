@@ -48,7 +48,10 @@ def get_solar_angle_of_incidence_fast(dt: datetime, latitude, longitude, tilt, a
 
     # restricting AOI values as projection functions do not expect AOI higher than 90. Should never be lower than 0 but
     # setting a limit anyways
-    angle_of_incidence = angle_of_incidence.clip(lower=0, upper=90)
+    # angle_of_incidence = angle_of_incidence.clip(lower=0, upper=90)
+
+    if len(angle_of_incidence) == 1:
+        return angle_of_incidence.values[0]
 
     return angle_of_incidence
 
