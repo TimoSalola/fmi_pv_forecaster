@@ -57,18 +57,19 @@ def test_dhi_transposition_tilt0():
 
         time = datetime.datetime.now()
 
-        dhi = round(random.random()*300, 2)
-        dni = round(random.random()*1000, 2)
-        latitude = round(random.random()*90, 2)
-        longitude = round(180-random.random()*360, 2)
+        dhi = round(random.random() * 300, 2)
+        dni = round(random.random() * 1000, 2)
+        latitude = round(random.random() * 90, 2)
+        longitude = round(180-random.random() * 360, 2)
 
         tilt = 0 #random.randint(0,90)
         azimuth = random.randint(0, 360)
 
-        aoi = round(
-            astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time, latitude, longitude, tilt, azimuth), 2)
+        aoi = round(astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time,
+                                            latitude, longitude, tilt, azimuth), 2)
 
 
+        # Irradiance transpositions and rounding
         irradiance_driesse = round(irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
                                 latitude, longitude, tilt, azimuth), 2)
         irradiance_driesse = irradiance_driesse.values[0]
@@ -155,20 +156,19 @@ def test_dhi_transposition_random_panel_angles():
         tilt = random.randint(0,90)
         azimuth = random.randint(0, 360)
 
-        aoi = round(
-            astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time, latitude, longitude, tilt, azimuth), 2)
+        aoi = round(astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time,
+                                                        latitude, longitude, tilt, azimuth), 2)
 
         # Irradiance values as floats
-        irradiance_driesse = round(irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
-                                                                                                       latitude,
-                                                                                                       longitude, tilt,
-                                                                                                       azimuth), 2)
+        irradiance_driesse = round(
+            irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
+            latitude, longitude, tilt, azimuth), 2)
+
         irradiance_driesse = irradiance_driesse.values[0]
 
         irradiance_perez = round(
             irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
-                                                                                latitude, longitude, tilt, azimuth,
-                                                                                driesse=False), 2)
+            latitude, longitude, tilt, azimuth, driesse=False), 2)
         irradiance_perez = irradiance_perez.values[0]
 
         irradiance_isotropic = irradiance_transpositions.__project_dhi_to_panel_surface(dhi, tilt)
@@ -231,15 +231,17 @@ def test_dni_transposition():
 
         if aoi_limited == 90.0:
             assert transposed_dni == 0, (
-                "Transposed DNI should be zero when AOI is 90 or higher. AOI was: " + str(aoi) + "deg. Transposed DNI was: " + str(transposed_dni) + "w"
+                "Transposed DNI should be zero when AOI is 90 or higher. AOI was: " + str(aoi) +
+                "deg. Transposed DNI was: " + str(transposed_dni) + "w"
             )
 
         assert transposed_dni >= 0, (
-            "Transposed DNI was " + str(transposed_dni) + " W, should never be negative. AOI was: " + str(aoi_limited) +" deg."
+            "Transposed DNI was " + str(transposed_dni) +
+            " W, should never be negative. AOI was: " + str(aoi_limited) + " deg."
         )
 
         assert transposed_dni <= dni, (
-            "Transposed DNI(" +str(transposed_dni)+") was higher than DNI(" + str(dni)+")"
+            "Transposed DNI(" +str(transposed_dni) + ") was higher than DNI(" + str(dni)+")"
 
         )
 
