@@ -1,6 +1,5 @@
 import pandas as pd
 import pytest
-from numpy.f2py.symbolic import as_eq
 
 import fmi_pv_forecaster.pv_forecaster as pvfc
 

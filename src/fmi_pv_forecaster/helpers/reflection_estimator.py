@@ -121,7 +121,7 @@ def __dni_reflected(dt: datetime, latitude, longitude, tilt, azimuth) -> float:
 
     a_r = reflectance_constant
 
-    AOI = astronomical_calculations.get_solar_angle_of_incidence_fast(dt, latitude, longitude, tilt, azimuth)
+    AOI = astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(dt, latitude, longitude, tilt, azimuth)
 
     # upper section of the fraction equation
     upper_fraction = math.e ** (-numpy.cos(numpy.radians(AOI)) / a_r) - math.e ** (-1.0 / a_r)

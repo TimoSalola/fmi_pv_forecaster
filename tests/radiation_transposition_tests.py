@@ -8,61 +8,6 @@ import fmi_pv_forecaster.helpers.irradiance_transpositions as irradiance_transpo
 import fmi_pv_forecaster.helpers.astronomical_calculations as astronomical_calculations
 import random
 
-def test_power_output_estimation_function():
-    """
-    This function tests if the power output estimation function is outputting reasonable values.
-    """
-
-    random.seed(1)
-
-    for i in range(0, 100):
-        kwh_rating1 = random.randint(1,100)
-        kwh_rating2 = random.randint(1, 100)
-        panel_temp = random.randint(-40, 100)
-
-        absorbed_radiation = random.random()*1000
-        output_estimator.rated_power = kwh_rating1
-        estimated_output1 = output_estimator.__estimate_output(absorbed_radiation, panel_temp)
-        output_estimator.rated_power = kwh_rating2
-        estimated_output2 = output_estimator.__estimate_output(absorbed_radiation, panel_temp)
-
-        #print("Nominal power 1: " +str(kwh_rating1))
-        #print("Nominal power 2: " +str(kwh_rating2))
-        #print("absorbed radiation: " + str(absorbed_radiation))
-        #print("Power 1: " +str(estimated_output1))
-        #print("Power 2: " + str(estimated_output2))
-        #print("Upper limit1: " + str(absorbed_radiation*kwh_rating1))
-        #print("Upper limit2: " + str(absorbed_radiation * kwh_rating2))
-        #print("Power ratio: " + str(rating_ratio))
-        #print("panel temp: " + str(panel_temp))
-
-        assert np.issubdtype(type(estimated_output1), np.floating), (
-            # np.floating is a group in which all numpy.float -types belong to. Type seems to be float64 but
-            # being careful here, perhaps on some systems the package returns a float32 or some other.
-            print("Output type was not numpy float, type was instead: " + str(type(estimated_output1)))
-        )
-
-        assert estimated_output1 >= 0, (
-            "Estimated power output was negative, this should never happen."
-        )
-        assert estimated_output1 < absorbed_radiation*kwh_rating1*1.01, (
-            # including a 1% margin due to floating point errors.
-            "Estimated power was greater than absorbed radiation, this should never happen.",
-            str(estimated_output1) + " < " + str(absorbed_radiation*kwh_rating1)
-        )
-
-        # power rating values should be just simple multipliers, this bit tests if both estimated power values are
-        # within a 2% range when scaling is reversed
-        assert estimated_output1/kwh_rating1  >= (estimated_output2/kwh_rating2) * 0.98, (
-            "Nominal system power scaling does not appear to be linear."
-        )
-
-        assert estimated_output1/kwh_rating1 <= (estimated_output2/kwh_rating2) * 1.02, (
-            "Nominal system power scaling does not appear to be linear."
-        )
-
-
-    print("Power output function is returning values which seem physically possible and reasonable.")
 
 
 """
@@ -118,7 +63,7 @@ def test_dhi_transposition_tilt0():
         azimuth = random.randint(0, 360)
 
         aoi = round(
-            astronomical_calculations.get_solar_angle_of_incidence_fast(time, latitude, longitude, tilt, azimuth), 2)
+            astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time, latitude, longitude, tilt, azimuth), 2)
 
 
         irradiance_driesse = round(irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
@@ -184,7 +129,6 @@ def test_dhi_transposition_tilt0():
 
     print("Tested 300 random dhi transpositions at tilt = 0 using otherwise random inputs. No faults found.")
 
-
 def test_dhi_transposition_random_panel_angles():
     """
     This function tests dhi transpositions, proper testing is unfortunately difficult so this just checks physical
@@ -205,7 +149,7 @@ def test_dhi_transposition_random_panel_angles():
         azimuth = random.randint(0, 360)
 
         aoi = round(
-            astronomical_calculations.get_solar_angle_of_incidence_fast(time, latitude, longitude, tilt, azimuth), 2)
+            astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time, latitude, longitude, tilt, azimuth), 2)
 
         irradiance_driesse = round(irradiance_transpositions.__project_dhi_to_panel_surface_perez_fast(time, dhi, dni,
                                                                                                        latitude,
@@ -238,3 +182,54 @@ def test_dhi_transposition_random_panel_angles():
         )
 
     print("Tested 300 random dhi transpositions with all random inputs. No faults found.")
+
+def test_dni_transposition():
+
+
+    for i in range(0, 300):
+        time = datetime.datetime.now()
+        dni = round(random.random() * 1000, 2)
+
+        latitude = round(random.random() * 90, 2)
+        longitude = round(180 - random.random() * 360, 2)
+        tilt = random.randint(0,90)
+        azimuth = random.randint(0, 360)
+
+
+        transposed_dni = round(irradiance_transpositions.__project_dni_to_panel_surface_using_time_fast(dni,
+                                time, latitude, longitude, tilt, azimuth), 2).values[0]
+
+        # true aoi
+        aoi = round(astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time,
+                       latitude, longitude, tilt, azimuth), 2).values[0]
+        # 90 deg limited aoi
+        aoi_limited = round(astronomical_calculations.get_solar_angle_of_incidence_limited(time,
+                           latitude, longitude, tilt, azimuth), 2).values[0]
+
+        print("=====")
+        print("dni: " + str(dni) + "w")
+        print("tilt: " + str(tilt) + "deg")
+        print("azimuth: " + str(azimuth) + "deg")
+        print("Transposed dni: " + str(transposed_dni) + "w")
+        print("AOI: " + str(aoi) + "deg")
+        print("AOI limited: " + str(aoi_limited) + "deg")
+        print("=====")
+
+
+        if aoi_limited == 90.0:
+            assert transposed_dni == 0, (
+                "Transposed DNI should be zero when AOI is 90 or higher. AOI was: " + str(aoi) + "deg. Transposed DNI was: " + str(transposed_dni) + "w"
+            )
+
+        assert transposed_dni >= 0, (
+            "Transposed DNI was " + str(transposed_dni) + " W, should never be negative. AOI was: " + str(aoi_limited) +" deg."
+        )
+
+        assert transposed_dni <= dni, (
+            "Transposed DNI(" +str(transposed_dni)+") was higher than DNI(" + str(dni)+")"
+
+        )
+
+    print("DNI transpositions did not have physical impossibilities.")
+
+

@@ -75,7 +75,7 @@ def temperature_of_module(absorbed_radiation: float, wind: float,
 
     # wind speed at model elevation, assumes 0 speed at ground, wind speed vector len at 2m and forms a
     # curve which describes the wind speed transition from 0 to 10m wind speed to higher
-    wind_speed = (module_elevation / 10) ** 0.1429 * wind
+    wind_speed = wind * (module_elevation / 10) ** 0.1429
 
     module_temperature = absorbed_radiation * math.e ** (constant_a + constant_b * wind_speed) + air_temperature
 

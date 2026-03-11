@@ -88,8 +88,8 @@ def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,
     This version of the function is fairly well optimized.
     """
 
-    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt, latitude, longitude,
-                                                                                     tilt, azimuth)
+    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_limited(dt, latitude, longitude,
+                                                                                               tilt, azimuth)
     output = numpy.abs(__project_dni_to_panel_surface_using_angle(dni, angle_of_incidence))
 
     return output
@@ -105,7 +105,6 @@ def __project_dni_to_panel_surface_using_angle(dni: float, angle_of_incidence: f
     """
 
     return dni * numpy.cos(numpy.radians(angle_of_incidence))
-
 
 
 
@@ -141,9 +140,6 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     else:
         dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
                                                    solar_zenith, solar_azimuth, airmass, return_components=False)
-
-    if len(dhi_perez) == 1:
-        return dhi_perez.values[0]
 
     return dhi_perez
 
