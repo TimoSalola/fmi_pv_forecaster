@@ -76,8 +76,7 @@ The python representation of the PV model is best thought as a single main PV mo
 helper functions.
 
 The main PV model function is `process_radiation_df(data)` and it is also the function a user would call if they were
-using their
-own radiation data as seen in example [link]. The input has to be a python dataframe with solar irradiance data.
+using their own radiation data as seen in [example 3](examples.md#example-3-processing-external-data-with-the-pv-model). The input has to be a python dataframe with solar irradiance data.
 
 Inside the main PV model function are internal helper functions which add columns to the given dataframe.
 The first of these internal helpers
@@ -98,25 +97,67 @@ This program structure ensures that no matter how the forecast is requested, the
 **External helper `pvfc.get_default_fmi_forecast()`:**
 
 ```python
-def get_default_fmi_forecast():
-    # creating time interval
-    interval_start = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=3)
-    interval_end = interval_start + datetime.timedelta(hours=68)
+def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
+    """
+    This function returns the whole 66~ish hour FMI forecast available at this moment in time.
+    Timestamps in the forecast are every 60 minutes with a 30min offset. 12:30, 13:30 and so on, using UTC time.
+    :param interpolate: Default false will skip interpolation. String "15min" will result in interpolated forecasts
+    where power values are at 12:00, 12:15, 12:30...
 
-    # retrieving forecast data from fmi servers
-    data = __get_fmi_forecast_for_interval(interval_start, interval_end)
+    Interpolation works nicely with values which divide 60 into integers. 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
+    :return:
+    """
+
+    # getting the hourly 66 hour forecast
+    data = get_fmi_radiation_forecast()
+
+    # if interpolation is left False, interpolation will not be done
+    if interpolate is not False:
+        # resampling to given time resolution, "15min" perhaps?
+        data = data.resample(interpolate).asfreq()
+
+        # interpolating nans from resampling
+        data = data.interpolate(method="linear")
+        # Note, this function supports other interpolation methods. Got a bunch of errors with them, but in theory
+        # some interpolation functions could result in nicer output.
 
     # processing data with our pv model
     data = process_radiation_df(data)
 
-    # returning results from the model
     return data
 ```
 
 **Main PV model function:**
 
 ```python
+
 def process_radiation_df(data):
+    """
+    This function processes a radiation dataframe and estimates the output of a pv system.
+
+    The input df must have columns:
+    'time', 'dni', 'dhi', 'ghi'
+    additional columns "T", "wind" and "albedo" are also useful
+
+    time column is the mathematical point for which each row in the data is simulated for.
+    Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
+    """
+
+    if panel_tilt is None or panel_azimuth is None:
+        raise ValueError(
+            "Tilt and azimuth must be defined before PV output is estimated."
+            " Call pv_forecast.set_angles(tilt, azimuth) first with"
+            " valid 0-90, 0-360 degree panel angles."
+        )
+
+
+    if "cloud_cover" not in data.index:
+        # If using pvlib clearsky data, there will not be a cloud cover column. Added here for compatibility.
+        data["cloud_cover"] = 0
+
+    # print(data)
+    # print(data.columns)
+
     # step 2. project irradiance components to plane of array:
     data = irradiance_transpositions.irradiance_df_to_poa_df(data, site_latitude, site_longitude, panel_tilt,
                                                              panel_azimuth)
@@ -133,6 +174,10 @@ def process_radiation_df(data):
 
     # step 6. estimate power output
     data = output_estimator.add_output_to_df(data)
+
+    if not extended_output:
+        # if extended output not in use, return only some columns
+        return data[["T", "wind", "module_temp", "output"]]
 
     return data
 ```
@@ -257,7 +302,7 @@ which source is used, the result should be a pandas dataframe with datetime inde
     }
 
     state pvlib_path {
-        pvlib --> pvlib_rad_table: .get_default_clearsky_estimate()
+        pvlib --> pvlib_rad_table: .get_default_clearsky_forecast()
     }
 
     state ext_path {
@@ -354,6 +399,8 @@ stateDiagram-v2
     panel_angles --> perez
     sun_pos --> perez
     
+    dni --> perez
+    time --> perez
     perez --> dhi_poa
     
     
