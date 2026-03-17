@@ -9,4 +9,3 @@ wind_speed = 2
 
 # default albedo. Lower values mean lower ground reflectivity. Range in 0 to 1
 albedo = 0.25
-

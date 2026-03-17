@@ -11,7 +11,8 @@ import random
 
 
 """
-IRRADIANCE TRANSPOSITION MINI FUNCTION TESTS
+This file contains tests for irradiance transposition functions. Uses some transposition functions for testing which
+the regular forecasts would not use.
 """
 
 test_count = 300

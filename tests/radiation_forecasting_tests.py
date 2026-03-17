@@ -4,6 +4,11 @@ import pytest
 import fmi_pv_forecaster.pv_forecaster as pvfc
 
 
+"""
+This file contains tests for radiation forecasting, a subset of pv_forecaster functions
+"""
+
+
 @pytest.fixture(scope="module", autouse=True)
 def setUp():
     """

@@ -3,6 +3,12 @@ import numpy as np
 import fmi_pv_forecaster.helpers.panel_temperature_estimator
 
 
+"""
+This file contains tests for file panel_temperature_estimator
+"""
+
+
+
 def test_module_temp():
 
     for i in range(0, 300):

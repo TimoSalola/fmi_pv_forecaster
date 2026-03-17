@@ -91,7 +91,7 @@ def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,
     """
 
     angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_limited(dt, latitude, longitude,
-                                                                                               tilt, azimuth)
+                                                                                        tilt, azimuth)
     output = numpy.abs(__project_dni_to_panel_surface_using_angle(dni, angle_of_incidence))
 
     return output
@@ -107,8 +107,6 @@ def __project_dni_to_panel_surface_using_angle(dni: float, angle_of_incidence: f
     """
 
     return dni * numpy.cos(numpy.radians(angle_of_incidence))
-
-
 
 
 def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float, latitude, longitude,
@@ -152,11 +150,11 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     # Continuous perez
     if driesse:
         dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                                               solar_zenith, solar_azimuth, airmass, return_components=False)
+                                                   solar_zenith, solar_azimuth, airmass, return_components=False)
     else:
         # piecewise perez
         dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                                                   solar_zenith, solar_azimuth, airmass, return_components=False)
+                                           solar_zenith, solar_azimuth, airmass, return_components=False)
 
     return dhi_perez
 
@@ -176,9 +174,11 @@ def __project_ghi_to_panel_surface(ghi: float, tilt: float,
     step2 = ghi * albedo * step1
     return step2  # ghi * config.albedo * ((1.0 - math.cos(numpy.radians(config.tilt))) / 2.0)
 
+
 """
 UNUSED FUNCTIONS BELOW
 """
+
 
 def __project_dhi_to_panel_surface(dhi: float, tilt) -> float:
     """

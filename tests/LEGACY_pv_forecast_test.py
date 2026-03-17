@@ -12,6 +12,11 @@ import fmi_pv_forecaster
 from fmi_pv_forecaster import pv_forecaster as pv_forecast
 
 
+"""
+This is not intended as an automatic test file, it contains old broken tests and 
+"""
+
+
 def random_int(a, b):
     # helper, generates ints for some functions
     return random.randint(a, b)

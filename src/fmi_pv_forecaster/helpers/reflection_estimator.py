@@ -195,7 +195,6 @@ def __dhi_reflected(tilt) -> float:
     return dhi_reflected
 
 
-
 def print_full(x: pandas.DataFrame):
     """
     Prints a dataframe without leaving any columns or rows out. Useful for debugging.

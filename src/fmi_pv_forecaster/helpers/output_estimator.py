@@ -13,7 +13,7 @@ import pandas as pd
 
 from . import default_parameters
 
-rated_power = 1 # kw rating
+rated_power = 1  # kw rating
 
 
 def print_full(x: pandas.DataFrame):

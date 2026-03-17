@@ -3,6 +3,11 @@ import numpy as np
 import fmi_pv_forecaster.helpers.output_estimator as output_estimator
 import random
 
+"""
+This file contains tests for file output_estimator
+
+"""
+
 
 
 def test_power_output_estimation_function():

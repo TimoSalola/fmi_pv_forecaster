@@ -46,10 +46,11 @@ def get_solar_angle_of_incidence_fast_unlimited(dt: datetime, latitude, longitud
     # angle of incidence, angle between direct sunlight and solar panel normal
     angle_of_incidence = irradiance.aoi(panel_tilt, panel_azimuth, solar_apparent_zenith, solar_azimuth)
 
-    #if len(angle_of_incidence) == 1:
+    # if len(angle_of_incidence) == 1:
     #    return angle_of_incidence.values[0]
 
     return angle_of_incidence
+
 
 def get_solar_angle_of_incidence_limited(dt, latitude, longitude, tilt, azimuth) -> float:
     """
