@@ -1,14 +1,7 @@
 import datetime
-
-import numpy
-import numpy as np
-
-import fmi_pv_forecaster.helpers.output_estimator as output_estimator
 import fmi_pv_forecaster.helpers.irradiance_transpositions as irradiance_transpositions
 import fmi_pv_forecaster.helpers.astronomical_calculations as astronomical_calculations
 import random
-
-
 
 """
 This file contains tests for irradiance transposition functions. Uses some transposition functions for testing which
@@ -16,6 +9,7 @@ the regular forecasts would not use.
 """
 
 test_count = 300
+
 
 def test_ghi_transposition():
 
@@ -36,7 +30,8 @@ def test_ghi_transposition():
             "Transposed ghi was greater than ghi, this should never happen."
         )
 
-    print("Tested " + str(test_count)+" random ghi transpositions, no obvious faults found.")
+    print("Tested " + str(test_count) + " random ghi transpositions, no obvious faults found.")
+
 
 def test_dhi_transposition_tilt0():
     """
@@ -61,9 +56,9 @@ def test_dhi_transposition_tilt0():
         dhi = round(random.random() * 300, 2)
         dni = round(random.random() * 1000, 2)
         latitude = round(random.random() * 90, 2)
-        longitude = round(180-random.random() * 360, 2)
+        longitude = round(180 - random.random() * 360, 2)
 
-        tilt = 0 #random.randint(0,90)
+        tilt = 0  # random.randint(0,90)
         azimuth = random.randint(0, 360)
 
         aoi = round(astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time,
@@ -247,5 +242,3 @@ def test_dni_transposition():
         )
 
     print("Tested " + str(test_count) + " random dni transpositions. No faults found.")
-
-

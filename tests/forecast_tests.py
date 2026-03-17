@@ -15,6 +15,7 @@ def random_float(a, b):
     # enough for testing purposes. Also keeps prints neater.
     return round(random.uniform(a, b), 6)
 
+
 """
 ### PVlib clear sky testing
 """
@@ -32,7 +33,8 @@ def test_clearsky_with_random_parameters(test_number=None):
 
     timestep = random_int(1, 60)
 
-    time_start = datetime.datetime(random_int(2000, 2050), random_int(1, 12), random_int(1, 28), random_int(0, 23))
+    time_start = datetime.datetime(random_int(2000, 2050), random_int(1, 12),
+                                   random_int(1, 28), random_int(0, 23))
     time_end = time_start + timedelta(days=random_int(1, 10))
 
     pv_forecast.set_location(latitude, longitude)
@@ -40,8 +42,8 @@ def test_clearsky_with_random_parameters(test_number=None):
 
     clearsky_data = pv_forecast.__get_clearsky_radiation_for_interval(time_start, time_end, timestep)
 
-    assert clearsky_data is not None, "Clearsky data was none, something has to be wrong with the clearsky estimation function." + str(
-        clearsky_data)
+    assert clearsky_data is not None, ("Clearsky data was none, something has to be wrong with the"
+                                       "clearsky estimation function." + str(clearsky_data))
 
     # checking measurement count from df.
 
@@ -108,7 +110,7 @@ def test_default_fmi_forecast():
     powerdata = powerdata.dropna()
 
 
-    assert type(powerdata) is pandas.DataFrame,(
+    assert type(powerdata) is pandas.DataFrame, (
         "FMI forecast did not return a dataframe, something must be wrong."
     )
 
@@ -116,12 +118,12 @@ def test_default_fmi_forecast():
 
 
     assert len(powerdata) > 60, (
-        "FMI forecast length was too short. Something is wrong. Length was: " + str(len(powerdata)) +
-                                                                                    " when expected 65 or 66."
+        "FMI forecast length was too short. Something is wrong. Length was: " + str(len(powerdata))
+        + " when expected 65 or 66."
     )
 
     assert len(powerdata) < 70, (
-        "FMI forecast length was too long. Length was: " + str(len(powerdata))+ " when expected 65 or 66."
+        "FMI forecast length was too long. Length was: " + str(len(powerdata)) + " when expected 65 or 66."
     )
 
     powerdata2 = pv_forecast.get_default_fmi_forecast(interpolate="15min")
@@ -141,9 +143,6 @@ def test_default_fmi_forecast():
     )
 
     print(len(powerdata3))
-
-
-
 
     print("====================================================")
     print("==== FMI default interval forecast test done")

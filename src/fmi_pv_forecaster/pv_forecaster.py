@@ -342,7 +342,6 @@ def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     :return:
     """
 
-
     # getting the hourly 66 hour forecast
     data = get_fmi_radiation_forecast()
 
@@ -360,6 +359,7 @@ def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     data = process_radiation_df(data)
 
     return data
+
 
 def get_default_clearsky_forecast(timestep = 60) -> pd.DataFrame:
     """
@@ -396,6 +396,7 @@ def get_fmi_forecast_for_interval(interval_start, interval_end):
     default_fmi_forecast = get_default_fmi_forecast()
     return default_fmi_forecast.loc[interval_start:interval_end]
 
+
 def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60):
     if site_latitude is None or site_longitude is None:
         raise ValueError(
@@ -425,6 +426,7 @@ def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60
     data = process_radiation_df(data)
 
     return data
+
 
 def get_fmi_forecast_at_interpolated_time(given_time):
     fmi_power_forecast = get_default_fmi_forecast()
@@ -485,6 +487,7 @@ def process_radiation_df(data):
         return data[["T", "wind", "module_temp", "output"]]
 
     return data
+
 
 def get_fmi_radiation_forecast():
     """

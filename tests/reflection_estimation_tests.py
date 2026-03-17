@@ -15,7 +15,7 @@ def test_dni_reflections():
         longitude = random.uniform(-90,90)
         tilt = random.uniform(-90,90)
         azimuth = random.uniform(-90,90)
-        dni = random.uniform(0, 1000)
+        dni = random.uniform(0,1000)
         time = datetime.datetime.now()
 
 
@@ -39,14 +39,14 @@ def test_dni_reflections():
         print("=====")
 
 
-        assert reflection_loss >= 0 and reflection_loss <= 1, (
+        assert reflection_loss >= 0 and reflection_loss <= 1,(
             "Reflective loss does not stay in range [0, 1], this time it was " + str(reflection_loss)
         )
 
         if aoi > 90:
             assert reflection_loss > 0.99, (
-                "Reflective losses should be near 100% when aoi is higher than 90 degrees. Now aoi was " + str(aoi) +
-                "and reflective losses were " + str(reflection_loss)
+                "Reflective losses should be near 100% when aoi is higher than 90 degrees. Now aoi was " + str(aoi)
+                + "and reflective losses were " + str(reflection_loss)
             )
 
     print("Ran " + str(test_count) + " tests on dni reflections. Did not find obvious issues.")
@@ -62,7 +62,7 @@ def test_dhi_reflections():
     """
 
 
-    for tilt in range (0,91, 1):
+    for tilt in range(0, 91, 1):
 
         reflection_loss = fmi_pv_forecaster.helpers.reflection_estimator.__dhi_reflected(tilt)
 
@@ -92,7 +92,7 @@ def test_dhi_reflections():
 def test_ghi_reflections():
 
 
-    for tilt in range (0,120, 1):
+    for tilt in range(0, 120, 1):
 
         reflection_loss = fmi_pv_forecaster.helpers.reflection_estimator.__ghi_reflected(tilt)
 
@@ -104,7 +104,7 @@ def test_ghi_reflections():
 
 
         assert reflection_loss >= 0 and reflection_loss <= 1, (
-            "Reflective losses not in range [0,1] like expected. Was " + str(reflection_loss)
+            "Reflective losses not in range [0, 1] like expected. Was " + str(reflection_loss)
         )
 
 

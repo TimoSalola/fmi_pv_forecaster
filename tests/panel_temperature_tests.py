@@ -23,23 +23,23 @@ def test_module_temp():
 
         module_t = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation, wind, module_elevation, air_temperature)
 
-        module_t2 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation+50, wind,
+        module_t2 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation + 50, wind,
                                                                                                module_elevation,
                                                                                                air_temperature)
 
-        module_t3 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation, wind+5,
+        module_t3 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation, wind + 5,
                                                                                                 module_elevation,
                                                                                                 air_temperature)
 
         module_t4 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation, wind,
-                                                                                                module_elevation+5,
+                                                                                                module_elevation + 5,
                                                                                                 air_temperature)
 
         module_t5 = fmi_pv_forecaster.helpers.panel_temperature_estimator.temperature_of_module(radiation, wind,
                                                                                                 module_elevation,
-                                                                                                air_temperature+5)
+                                                                                                air_temperature + 5)
 
-        assert type(module_t) == float or type(module_t) == np.float64, (
+        assert isinstance(module_t, float) or isinstance(module_t, np.float64), (
             "Module Temperature type was not float like expected. Type was: " + str(type(module_t))
         )
         module_t_r = round(module_t, 2)
