@@ -14,8 +14,8 @@ test_count = 300
 def test_ghi_transposition():
 
     for i in range(0, test_count):
-        ghi = random.random()*1000
-        tilt = random.randint(0,90)
+        ghi = random.random() * 1000
+        tilt = random.randint(0, 90)
         albedo = random.random()
 
         transposed_irradiance = irradiance_transpositions.__project_ghi_to_panel_surface(ghi, tilt, albedo)
@@ -149,7 +149,7 @@ def test_dhi_transposition_random_panel_angles():
         latitude = round(random.random() * 90, 2)
         longitude = round(180 - random.random() * 360, 2)
 
-        tilt = random.randint(0,90)
+        tilt = random.randint(0, 90)
         azimuth = random.randint(0, 360)
 
         aoi = round(astronomical_calculations.get_solar_angle_of_incidence_fast_unlimited(time,
@@ -189,6 +189,7 @@ def test_dhi_transposition_random_panel_angles():
 
     print("Tested " + str(test_count) + " random dhi transpositions with all random inputs. No faults found.")
 
+
 def test_dni_transposition():
 
     test_count = 300
@@ -199,7 +200,7 @@ def test_dni_transposition():
 
         latitude = round(random.random() * 90, 2)
         longitude = round(180 - random.random() * 360, 2)
-        tilt = random.randint(0,90)
+        tilt = random.randint(0, 90)
         azimuth = random.randint(0, 360)
 
 
@@ -227,17 +228,17 @@ def test_dni_transposition():
 
         if aoi_limited == 90.0:
             assert transposed_dni == 0, (
-                "Transposed DNI should be zero when AOI is 90 or higher. AOI was: " + str(aoi) +
-                "deg. Transposed DNI was: " + str(transposed_dni) + "w"
+                "Transposed DNI should be zero when AOI is 90 or higher. AOI was: " + str(aoi)
+                + "deg. Transposed DNI was: " + str(transposed_dni) + "w"
             )
 
         assert transposed_dni >= 0, (
-            "Transposed DNI was " + str(transposed_dni) +
-            " W, should never be negative. AOI was: " + str(aoi_limited) + " deg."
+            "Transposed DNI was " + str(transposed_dni)
+            + " W, should never be negative. AOI was: " + str(aoi_limited) + " deg."
         )
 
         assert transposed_dni <= dni, (
-            "Transposed DNI(" +str(transposed_dni) + ") was higher than DNI(" + str(dni)+")"
+            "Transposed DNI(" +str(transposed_dni) + ") was higher than DNI(" + str(dni) + ")"
 
         )
 

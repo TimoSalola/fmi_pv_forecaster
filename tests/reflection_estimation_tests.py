@@ -39,7 +39,7 @@ def test_dni_reflections():
         print("=====")
 
 
-        assert reflection_loss >= 0 and reflection_loss <= 1,(
+        assert reflection_loss >= 0 and reflection_loss <= 1, (
             "Reflective loss does not stay in range [0, 1], this time it was " + str(reflection_loss)
         )
 
@@ -119,9 +119,4 @@ def test_ghi_reflections():
     )
 
     print("Ran tests on ghi reflections. Did not find obvious issues.")
-
-
-
-
-
 

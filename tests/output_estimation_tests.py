@@ -9,7 +9,6 @@ This file contains tests for file output_estimator
 """
 
 
-
 def test_power_output_estimation_function():
     """
     This function tests if the power output estimation function is outputting reasonable values.
@@ -22,7 +21,7 @@ def test_power_output_estimation_function():
         kwh_rating2 = random.randint(1, 100)
         panel_temp = random.randint(-40, 100)
 
-        absorbed_radiation = random.random()*1000
+        absorbed_radiation = random.random() * 1000
         output_estimator.rated_power = kwh_rating1
         estimated_output1 = output_estimator.__estimate_output(absorbed_radiation, panel_temp)
         output_estimator.rated_power = kwh_rating2
@@ -47,19 +46,19 @@ def test_power_output_estimation_function():
         assert estimated_output1 >= 0, (
             "Estimated power output was negative, this should never happen."
         )
-        assert estimated_output1 < absorbed_radiation*kwh_rating1*1.01, (
+        assert estimated_output1 < absorbed_radiation*kwh_rating1 * 1.01, (
             # including a 1% margin due to floating point errors.
             "Estimated power was greater than absorbed radiation, this should never happen.",
-            str(estimated_output1) + " < " + str(absorbed_radiation*kwh_rating1)
+            str(estimated_output1) + " < " + str(absorbed_radiation * kwh_rating1)
         )
 
         # power rating values should be just simple multipliers, this bit tests if both estimated power values are
         # within a 2% range when scaling is reversed
-        assert estimated_output1/kwh_rating1  >= (estimated_output2/kwh_rating2) * 0.98, (
+        assert estimated_output1/kwh_rating1 >= (estimated_output2 / kwh_rating2) * 0.98, (
             "Nominal system power scaling does not appear to be linear."
         )
 
-        assert estimated_output1/kwh_rating1 <= (estimated_output2/kwh_rating2) * 1.02, (
+        assert estimated_output1/kwh_rating1 <= (estimated_output2 / kwh_rating2) * 1.02, (
             "Nominal system power scaling does not appear to be linear."
         )
 

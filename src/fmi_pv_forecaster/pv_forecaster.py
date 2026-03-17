@@ -326,10 +326,12 @@ def __interpolate_nearest_power_to_time_value(power_df, time_value):
     # returning interpolated value
     return interpolated_row
 
+
 """
 Internal helpers end
 Public fixed interval forecasting functions begin
 """
+
 
 def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     """
@@ -361,7 +363,7 @@ def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     return data
 
 
-def get_default_clearsky_forecast(timestep = 60) -> pd.DataFrame:
+def get_default_clearsky_forecast(timestep=60) -> pd.DataFrame:
     """
 
     """
@@ -380,8 +382,9 @@ def get_default_clearsky_forecast(timestep = 60) -> pd.DataFrame:
 
 """
 Public fixed interval forecasting functions end
-Public flexible interval forecasting functions begin 
+Public flexible interval forecasting functions begin
 """
+
 
 def get_fmi_forecast_for_interval(interval_start, interval_end):
     """
@@ -437,6 +440,7 @@ def get_fmi_forecast_at_interpolated_time(given_time):
 Public flexible interval forecast functions end
 Other public functions begin
 """
+
 
 def process_radiation_df(data):
     """
@@ -512,7 +516,6 @@ def get_fmi_radiation_forecast():
     data = __get_fmi_forecast_for_interval(interval_start, interval_end)
 
     return data
-
 
 
 """

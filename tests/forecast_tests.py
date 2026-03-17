@@ -20,6 +20,7 @@ def random_float(a, b):
 ### PVlib clear sky testing
 """
 
+
 def test_clearsky_with_random_parameters(test_number=None):
     print("====================================================")
     print("==== Testing clearsky estimation for custom interval with random parameters")
@@ -90,6 +91,7 @@ def test_clearsky_radiation_estimation():
 """
 ### FMI forecast based testing
 """
+
 
 def test_default_fmi_forecast():
     print("====================================================")
