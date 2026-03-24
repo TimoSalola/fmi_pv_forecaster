@@ -6,25 +6,24 @@ applications.
 
 
 <!-- TOC -->
-
 * [PV model explained](#pv-model-explained)
-    * [Model overview](#model-overview)
-        * [Model as a python functions](#model-as-a-python-functions)
+  * [Model overview](#model-overview)
+    * [Model as a python functions](#model-as-a-python-functions)
 * [Detailed description](#detailed-description)
-    * [Step 1. Data input](#step-1-data-input)
-        * [Step 1.1. Constant input](#step-11-constant-input)
-        * [Step 1.2. Radiation table sourcing](#step-12-radiation-table-sourcing)
-    * [Step 2. Irradiance transposition](#step-2-irradiance-transposition)
-    * [Step 3. Reflection estimation](#step-3-reflection-estimation)
-    * [Step 4. Total absorbed irradiance](#step-4-total-absorbed-irradiance)
-    * [Step 5. Panel temperature estimation](#step-5-panel-temperature-estimation)
-    * [Step 6. Output estimation](#step-6-output-estimation)
+  * [Step 1. Data input](#step-1-data-input)
+    * [Step 1.1. Constant input](#step-11-constant-input)
+    * [Step 1.2. Radiation table sourcing](#step-12-radiation-table-sourcing)
+  * [Step 2. Irradiance transposition](#step-2-irradiance-transposition)
+  * [Step 3. Reflection estimation](#step-3-reflection-estimation)
+  * [Step 4. Total absorbed irradiance](#step-4-total-absorbed-irradiance)
+  * [Step 5. Panel temperature estimation](#step-5-panel-temperature-estimation)
+  * [Step 6. Output estimation](#step-6-output-estimation)
 * [2. Extras](#2-extras)
-    * [2.1. Adding shadow modeling to the PV model](#21-adding-shadow-modeling-to-the-pv-model)
-    * [2.2. Snow related issues](#22-snow-related-issues)
-        * [2.2.1. Snow sliding](#221-snow-sliding)
-        * [2.2.2. Snow reflections](#222-snow-reflections)
-
+  * [2.1. Adding shadow modeling to the PV model](#21-adding-shadow-modeling-to-the-pv-model)
+  * [2.2. Snow related issues](#22-snow-related-issues)
+    * [2.2.1. Snow sliding](#221-snow-sliding)
+    * [2.2.2. Snow reflections](#222-snow-reflections)
+  * [2.3. Missing radiation values](#23-missing-radiation-values)
 <!-- TOC -->
 
 ## Model overview

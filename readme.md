@@ -22,17 +22,17 @@ into the package.
 ## **Table of contents:**
 
 <!-- TOC -->
-
-* [Installing the package](#installing-the-package)
-* [FMI PV forecasts](#fmi-pv-forecasts)
+* [FMI open pv forecast package](#fmi-open-pv-forecast-package)
+  * [**Table of contents:**](#table-of-contents)
+  * [Installing the package](#installing-the-package)
+  * [FMI PV forecasts](#fmi-pv-forecasts)
     * [Forecast length and updating frequency](#forecast-length-and-updating-frequency)
     * [Geographic boundaries](#geographic-boundaries)
-* [Clear sky forecasts](#clear-sky-forecasts)
-* [Forecast accuracy](#forecast-accuracy)
+  * [Clear sky forecasts](#clear-sky-forecasts)
+  * [Forecast accuracy](#forecast-accuracy)
 * [Usage of external data instead of FMI open data](#usage-of-external-data-instead-of-fmi-open-data)
 * [Usage example](#usage-example)
-* [Authors and acknowledgements](#authors-and-acknowledgements)
-
+      * [Authors and acknowledgements](#authors-and-acknowledgements)
 <!-- TOC -->
 
 ## Installing the package
