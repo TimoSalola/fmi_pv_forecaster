@@ -1,5 +1,9 @@
 # Package documentation
 
+This file contains a rather verbose explanation of the functions available via this package.
+
+---
+
 Functions accessible to the user can be split into two main categories. Input functions which are used to feed
 system parameters to the PV model, and forecasting functions which run the PV model and generate a forecast.
 
@@ -7,18 +11,20 @@ There are also developmental functions, but these are listed more as a curiosity
 actively have to rely on or even be aware of.
 
 <!-- TOC -->
-
 * [Package documentation](#package-documentation)
 * [1. Input functions](#1-input-functions)
-    * [1.1. Required input functions](#11-required-input-functions)
-    * [1.2. Optional input functions](#12-optional-input-functions)
-    * [1.3. Conditional input functions](#13-conditional-input-functions)
+  * [1.1. Required input functions](#11-required-input-functions)
+  * [1.2. Optional input functions](#12-optional-input-functions)
+  * [1.3. Conditional input functions](#13-conditional-input-functions)
 * [2. Forecasting functions](#2-forecasting-functions)
-    * [2.1. FMI forecasting functions](#21-fmi-forecasting-functions)
-    * [2.2. Clear sky forecasting functions](#22-clear-sky-forecasting-functions)
-    * [2.3 External data processing functions](#23-external-data-processing-functions)
+  * [2.1. FMI forecasting functions](#21-fmi-forecasting-functions)
+    * [2.1.1. Radiation forecasting function](#211-radiation-forecasting-function)
+    * [2.1.2. Default FMI forecast](#212-default-fmi-forecast)
+    * [2.1.3. Interval from FMI forecast](#213-interval-from-fmi-forecast)
+    * [2.1.4. FMI forecast at interpolated time](#214-fmi-forecast-at-interpolated-time)
+  * [2.2. Clear sky forecasting functions](#22-clear-sky-forecasting-functions)
+  * [2.3. External data processing functions](#23-external-data-processing-functions)
 * [3. Developmental functions](#3-developmental-functions)
-
 <!-- TOC -->
 
 
@@ -52,9 +58,11 @@ pvfc.set_location(latitude, longitude)
 Coordinates can be retrieved from google maps. When browsing around, your url will contain the coordinates.
 
 Tilt and azimuth should be set to an accuracy of 1 degree if possible. Deviations higher than 5 degrees can cause
-noticeable modeling errors.
+noticeable modeling errors. If you have a method for plotting both forecasts and actual PV output, you can
+and should use the actual PV output for tuning the input parameters.
 
-Geolocation does not have to be exact and 1km from actual location is good enough[pv_forecaster.py](src/fmi_pv_forecaster/pv_forecaster.py).
+Geolocation does not have to be exact and 1km from actual location is good enough. Even offsets of 5 kilometers
+should not make a big difference due to uncertainties in weather forecasts. 
 
 ## 1.2. Optional input functions
 
@@ -91,9 +99,14 @@ but the source of the radiation data and the output returned to the user varies.
 
 ## 2.1. FMI forecasting functions
 
-These are the FMI open data based forecasting functions. By default, they are cached. This means that unless user
+These are the FMI open data based forecasting functions. They utilize weather and radiation forecasts retrieved
+from FMI open data service.
+
+
+By default, they are cached. This means that unless user
 changes the geolocation, or unless 60 seconds pass, the system will not make another API call. This is possible because
-the forecasts only depend on the location and current time.
+the forecasts only depend on the location and current time. This ensures that a python program using this package
+will use as little bandwidth as possible.
 
 Users can for example, call the FMI forecast for one set of panels, adjust panel angles and call the forecast again
 without new API calls being made. The API will stop responding to calls if user attempts to make thousands of calls
@@ -103,7 +116,7 @@ per day, which is unlikely in any situation, but this caching should make it eve
 
 ```python
 # Forecasting functions:
-pvfc.get_default_fmi_forecast(interpolate=False) # <- main, calls helper
+pvfc.get_default_fmi_forecast() # <- main, calls helper
 pvfc.get_fmi_forecast_for_interval(interval_start, interval_end) # <- wrapper, calls main
 pvfc.get_fmi_forecast_at_interpolated_time(time) # <- wrapper, calls main
 
@@ -115,7 +128,7 @@ pvfc.get_fmi_radiation_forecast()
 
 This is the helper function. It calls the FMI open data API and requests the available 66-ish hour 
 radiation and weather forecast. This function exists so that users can make their own modifications to the forecasts
-if needed or use them for purposes other than PV forecasting.
+if needed or use them for purposes other than PV forecasting. 
 
 **Calling the function:**
 ```python
@@ -123,7 +136,7 @@ if needed or use them for purposes other than PV forecasting.
 radiation_forecast = pvfc.get_fmi_radiation_forecast()
 ```
 
-**Short usage example:**
+**Usage example:**
 ```python
 # sample usage:
 radiation_forecast = pvfc.get_fmi_radiation_forecast()
@@ -145,10 +158,11 @@ And the python package used for accessing the API:
 This is the forecasting function regular users would most likely use. This is a prime example of how the
 radiation forecasts can be used together with the PV model.
 
-This function takes one optional parameter, `interpolate` which is by default `False`. If set to `"15min"` or
+This function takes one optional parameter `interpolate`. By default, it is set to `False`. If set to `"15min"` or
 `"1min"`, the radiation forecast will be linearly interpolated to a new time resolution before being passed onto the PV
 model. 
 
+**Default FMI forecast function code:**
 ```python
 def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     # getting the hourly 66 hour forecast
@@ -168,6 +182,16 @@ def get_default_fmi_forecast(interpolate=False) -> pd.DataFrame:
     data = process_radiation_df(data)
 
     return data
+```
+
+**Usage example:**
+
+```python
+# Normal forecast
+normal_forecast = pvfc.get_default_fmi_forecast()
+
+# 15 min time resolution forecast
+interpolated_forecast = pvfc.get_default_fmi_forecast(interpolate="15min")
 ```
 
 ### 2.1.3. Interval from FMI forecast
@@ -198,7 +222,7 @@ pvfc.get_fmi_forecast_at_interpolated_time(time)
 ## 2.2. Clear sky forecasting functions
 
 ```python
-pvfc.get_default_clearsky_forecast(timestep=60)
+pvfc.get_default_clearsky_forecast()
 pvfc.get_clearsky_estimate_for_interval(interval_start, interval_end, timestep)
 ```
 
@@ -211,26 +235,65 @@ many minutes there should be between rows in the resulting PV output estimate. A
 time interval or geographic location, this can be used for calculating power output during different seasons or even
 over a whole year. See [example 5](examples.md#example-5-estimating-clearsky-power-for-custom-time-interval) for usage.
 
-## 2.3 External data processing functions
+**Usage example:**
+```python
+# 60 min default forecast:
+default_clearsky_forecast = pvfc.get_default_clearsky_forecast()
+
+# generating 15 min clearsky and FMI forecasts
+clearsky_forecast = pvfc.get_default_clearsky_forecast(timestep=15)
+fmi_forecast = pvfc.get_default_fmi_forecast(interpolate="15min")
+```
+
+## 2.3. External data processing functions
 
 ```python
 pvfc.process_radiation_df(radiation_df)
 ```
 
 This function is actually the only PV model function in the program. When FMI or PVlib based forecasts are requested,
-they generate radiation tables and then call this function with their radiation tables.
+they generate radiation tables and then call this function with their radiation tables. See also [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for additional info.
 
-Input `radiation_df` has to have datetime index in utc format, and columns dni, dhi and ghi containing radiation
-values. See [example 3](examples.md#example-3-processing-external-data-with-the-pv-model) for more details.
+**Expected input df structure:**
+```commandline
+                                 dni        dhi        ghi          T       wind     albedo
+time                                                                                       
+2024-05-31 23:30:00+00:00       0.00       0.00       0.00      21.54       2.79       0.13
+2024-06-01 00:30:00+00:00       0.00       0.00       0.00      21.72       2.96       0.13
+2024-06-01 01:30:00+00:00       0.00       8.87       8.87      21.24       3.40       0.10
+2024-06-01 02:30:00+00:00      95.50      54.20      65.64      21.22       3.24       0.10
+2024-06-01 03:30:00+00:00     458.27      66.92     173.24      21.47       3.64       0.10
+```
+**Generated output:**
+```commandline
+                                   T       wind  module_temp     output
+time                                                                   
+2024-05-31 23:30:00+00:00      21.54       2.79        21.54       0.00
+2024-06-01 00:30:00+00:00      21.72       2.96        21.72       0.00
+2024-06-01 01:30:00+00:00      21.24       3.40        21.45      85.43
+2024-06-01 02:30:00+00:00      21.22       3.24        22.91   1,031.24
+2024-06-01 03:30:00+00:00      21.47       3.64        26.74   4,018.16
+```
 
+> Note: T, wind and albedo are optional, time has to be in UTC. dni, dhi and ghi are watts.
+
+**Warning: Model errors caused by misunderstandings on timestamps are extremely common.**
+
+**Meteorological time:**
+For meteorologists, 12:00 often means average of the time interval [11:00, 12:00] even when the better average time for this
+interval would be 11:30. If not corrected, this can easily result in 30 minute errors in sun positions, causing
+significant modeling errors. The FMI radiation retrieval function handles this for the user(which explains the xx:30:00
+-times in timestamps), but when working with your own data, verify what the timestamps actually mean.
+
+PVlib clearsky forecasts do not have timing related issues as PVlib uses the exact times to calculate the radiation.
 
 # 3. Developmental functions
 
 The following is a listing of functions included in the package but which are not typically useful to users.
 
 * force_clear_fmi_cache()
-* set_cache
-* set_extended_output
+* set_cache()
+* set_extended_output()
 
 Cache functions can be used to clear the local fmi cache or set caching to never occur. This will increase API calls
 to FMI servers so these should not be touched if at all possible.
