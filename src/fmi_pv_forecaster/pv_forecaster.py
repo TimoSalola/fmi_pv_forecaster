@@ -444,7 +444,7 @@ def process_radiation_df(data):
         )
 
 
-    if "cloud_cover" not in data.index:
+    if "cloud_cover" not in data.columns:
         # If using pvlib clearsky data, there will not be a cloud cover column. Added here for compatibility.
         data["cloud_cover"] = 0
 
