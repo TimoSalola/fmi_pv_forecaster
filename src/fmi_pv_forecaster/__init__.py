@@ -1,7 +1,7 @@
 # System parameters
 
 # debug
-from .pv_forecaster import force_clear_fmi_cache
+from .pv_forecaster import force_clear_fmi_cache, set_bifacial
 from .pv_forecaster import get_clearsky_estimate_for_interval
 # Forecast functions
 from .pv_forecaster import get_default_fmi_forecast
@@ -49,6 +49,7 @@ __all__ = [
     # toggles
     "set_extended_output",
     "set_cache",
+    "set_bifacial",
 
     # external usage
     "process_radiation_df",

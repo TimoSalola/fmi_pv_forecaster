@@ -25,6 +25,8 @@ panel_azimuth = None
 extended_output = False  # set to true and the radiation parameters and intermediate steps of the pv output calculation
 # will be included in the output
 
+bifacial = False
+
 power_rating = 1  # power in kw
 
 align_clearsky_and_fmi = True
@@ -189,6 +191,12 @@ def set_cache(cache_on):
     """
 
     meps_loader.cache_enabled = cache_on
+
+
+def set_bifacial(bifacial_on):
+    global bifacial
+    bifacial = bifacial_on
+
 
 
 """
@@ -423,6 +431,111 @@ Public flexible interval forecast functions end
 Other public functions begin
 """
 
+def process_radiation_df_bifacial(data_in):
+    """
+    This function processes a radiation dataframe and estimates the output of a pv system.
+
+    The input df must have columns:
+    'time', 'dni', 'dhi', 'ghi'
+    additional columns "T", "wind" and "albedo" are also useful
+
+    time column is the mathematical point for which each row in the data is simulated for.
+    Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
+    """
+
+    if "cloud_cover" not in data_in.columns:
+        # If using pvlib clearsky data, there will not be a cloud cover column. Added here for compatibility.
+        data_in["cloud_cover"] = 0
+
+    # panel main surface:
+    data_a = data_in.copy()
+    # panel back surface:
+    data_b = data_in.copy()
+
+    if panel_tilt is None or panel_azimuth is None:
+        raise ValueError(
+            "Tilt and azimuth must be defined before PV output is estimated."
+            " Call pv_forecast.set_angles(tilt, azimuth) first with"
+            " valid 0-90, 0-360 degree panel angles."
+        )
+
+
+
+    print("########### phase 1:")
+    print("data a:")
+    print_full(data_b)
+    print("data b:")
+    print_full(data_b)
+
+    # step 2. project irradiance components to plane of array:
+    # panel front surface, same as always
+    data_a = irradiance_transpositions.irradiance_df_to_poa_df(data_a, site_latitude, site_longitude, panel_tilt,
+                                                             panel_azimuth)
+
+
+
+
+
+    # panel back surface, requires recomputation of panel angles
+    azimuth_b = panel_azimuth
+    tilt_b = 180- panel_tilt
+
+    print("azimuth_b: " + str(azimuth_b))
+    print("tilt_b: " + str(tilt_b))
+    data_b = irradiance_transpositions.irradiance_df_to_poa_df(data_b, site_latitude, site_longitude, tilt_b,
+                                                             azimuth_b)
+
+    print("########### phase 2:")
+    print("tilt_a: " + str(panel_tilt))
+    print("azimuth_a: " + str(panel_azimuth))
+    print("data a:")
+    print_full(data_b)
+    print("azimuth_b: " + str(azimuth_b))
+    print("tilt_b: " + str(tilt_b))
+    print("data b:")
+    print_full(data_b)
+
+    # step 3. simulate how much of irradiance components is absorbed:
+    data_a = reflection_estimator.add_reflection_corrected_poa_components_to_df(data_a, site_latitude, site_longitude,
+                                                                              panel_tilt, panel_azimuth)
+
+    data_b = reflection_estimator.add_reflection_corrected_poa_components_to_df(data_b, site_latitude, site_longitude,
+                                                                              tilt_b, azimuth_b)
+
+
+
+
+
+    # step 4. compute sum of reflection-corrected components:
+    data_a = reflection_estimator.add_reflection_corrected_poa_to_df(data_a)
+
+    data_b = reflection_estimator.add_reflection_corrected_poa_to_df(data_b)
+
+    print(data_a)
+    print(data_a.columns)
+    print(data_b)
+    print(data_b.columns)
+
+    data = pandas.DataFrame()
+    data["time"] = data_a["time"]
+    data["dni"] = data_a["dni"]
+    data["dhi"] = data_a["dhi"]
+    data["ghi"] = data_a["ghi"]
+    data["cloud_cover"] = data_a["cloud_cover"]
+
+    data["poa_ref_cor"] = data_a["poa_ref_cor"] + data_b["poa_ref_cor"]
+
+    # step 5. estimate panel temperature based on wind speed, air temperature and absorbed radiation
+    data = panel_temperature_estimator.add_estimated_panel_temperature(data)
+
+    # step 6. estimate power output
+    data = output_estimator.add_output_to_df(data)
+
+    if not extended_output:
+        # if extended output not in use, return only some columns
+        return data[["T", "wind", "module_temp", "output"]]
+
+    return data
 
 def process_radiation_df(data):
     """
@@ -435,6 +548,13 @@ def process_radiation_df(data):
     time column is the mathematical point for which each row in the data is simulated for.
     Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
     """
+
+    print("bifacial check")
+    if bifacial:
+        print("was bifacial, using bifacial processing instead")
+        return process_radiation_df_bifacial(data)
+
+    print("was not bifacial, using common processing instead")
 
     if panel_tilt is None or panel_azimuth is None:
         raise ValueError(
