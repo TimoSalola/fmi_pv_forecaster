@@ -40,7 +40,7 @@ def clear_cache():
     cached_data = None
 
 
-def get_solar_azimuth_zenit_fast(sim_dt: datetime, latitude, longitude):
+def get_solar_azimuth_zenith_fast(sim_dt: datetime, latitude, longitude):
     """
     Returns apparent solar zenith and solar azimuth angles in degrees.
     :param sim_dt: time to compute the solar position for.
@@ -192,7 +192,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
     #
 
     # Adding solar zenith angle to df
-    df["sza"] = get_solar_azimuth_zenit_fast(df.index, latitude, longitude)[1]
+    df["sza"] = get_solar_azimuth_zenith_fast(df.index, latitude, longitude)[1]
     # solar zenit angle added
 
     # Calculate dni from dhi

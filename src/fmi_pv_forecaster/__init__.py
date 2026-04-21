@@ -23,6 +23,7 @@ from .pv_forecaster import set_location
 # optional system parameters
 from .pv_forecaster import set_module_elevation
 from .pv_forecaster import set_nominal_power_kw
+from .pv_forecaster import set_relative_bifacial_backside_efficiency
 
 __all__ = [
     # system parameters
@@ -32,11 +33,13 @@ __all__ = [
 
     # optional system parameters
     "set_module_elevation",
+    "set_relative_bifacial_backside_efficiency",
 
     # clearsky system parameters
     "set_default_albedo",
     "set_default_wind_speed",
     "set_default_air_temp",
+
 
     # forecast functions
     "get_default_fmi_forecast",

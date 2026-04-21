@@ -26,6 +26,7 @@ extended_output = False  # set to true and the radiation parameters and intermed
 # will be included in the output
 
 bifacial = False
+backside_efficiency = 1.0
 
 power_rating = 1  # power in kw
 
@@ -118,6 +119,16 @@ def set_extended_output(extended: bool):
     """
     global extended_output
     extended_output = extended
+
+def set_relative_bifacial_backside_efficiency(efficiency = 1.0):
+    """
+    :param efficiency: 1.0 means 100%, identical back and frontside performance. 0.5 would mean that the backside is
+    50% as efficient as the frontside.
+    """
+    global backside_efficiency
+    backside_efficiency = efficiency
+
+
 
 
 def set_nominal_power_kw(nominal_power: float):
@@ -462,10 +473,10 @@ def process_radiation_df_bifacial(data_in):
 
 
     print("########### phase 1:")
-    print("data a:")
-    print_full(data_b)
-    print("data b:")
-    print_full(data_b)
+    #print("data a:")
+    #print_full(data_b)
+    #print("data b:")
+    #print_full(data_b)
 
     # step 2. project irradiance components to plane of array:
     # panel front surface, same as always
@@ -477,23 +488,23 @@ def process_radiation_df_bifacial(data_in):
 
 
     # panel back surface, requires recomputation of panel angles
-    azimuth_b = panel_azimuth
-    tilt_b = 180- panel_tilt
+    azimuth_b = (panel_azimuth + 180) % 360
+    tilt_b = 180-panel_tilt
 
-    print("azimuth_b: " + str(azimuth_b))
-    print("tilt_b: " + str(tilt_b))
+    #print("azimuth_b: " + str(azimuth_b))
+    #print("tilt_b: " + str(tilt_b))
     data_b = irradiance_transpositions.irradiance_df_to_poa_df(data_b, site_latitude, site_longitude, tilt_b,
                                                              azimuth_b)
 
     print("########### phase 2:")
-    print("tilt_a: " + str(panel_tilt))
-    print("azimuth_a: " + str(panel_azimuth))
-    print("data a:")
-    print_full(data_b)
-    print("azimuth_b: " + str(azimuth_b))
-    print("tilt_b: " + str(tilt_b))
-    print("data b:")
-    print_full(data_b)
+    #print("tilt_a: " + str(panel_tilt))
+    #print("azimuth_a: " + str(panel_azimuth))
+    #print("data a:")
+    #print_full(data_b)
+    #print("azimuth_b: " + str(azimuth_b))
+    #print("tilt_b: " + str(tilt_b))
+    #print("data b:")
+    #print_full(data_b)
 
     # step 3. simulate how much of irradiance components is absorbed:
     data_a = reflection_estimator.add_reflection_corrected_poa_components_to_df(data_a, site_latitude, site_longitude,
@@ -507,6 +518,7 @@ def process_radiation_df_bifacial(data_in):
 
 
     # step 4. compute sum of reflection-corrected components:
+    print("Phase 4")
     data_a = reflection_estimator.add_reflection_corrected_poa_to_df(data_a)
 
     data_b = reflection_estimator.add_reflection_corrected_poa_to_df(data_b)
@@ -516,26 +528,46 @@ def process_radiation_df_bifacial(data_in):
     print(data_b)
     print(data_b.columns)
 
-    data = pandas.DataFrame()
-    data["time"] = data_a["time"]
-    data["dni"] = data_a["dni"]
-    data["dhi"] = data_a["dhi"]
-    data["ghi"] = data_a["ghi"]
-    data["cloud_cover"] = data_a["cloud_cover"]
+    output = data_a.copy()
 
-    data["poa_ref_cor"] = data_a["poa_ref_cor"] + data_b["poa_ref_cor"]
+    # 'time', 'ghi', 'dni', 'dhi', 'cloud_cover', 'dni_poa', 'dhi_poa',
+    #        'ghi_poa', 'poa', 'dni_rc', 'dhi_rc', 'ghi_rc', 'poa_ref_cor'
+
+    output["dni_poa_back"] = data_b["dni_poa"]
+    output["dhi_poa_back"] = data_b["dhi_poa"]
+    output["ghi_poa_back"] = data_b["ghi_poa"]
+
+    output["dni_rc_back"] = data_b["dni_rc"]
+    output["dhi_rc_back"] = data_b["dhi_rc"]
+    output["ghi_rc_back"] = data_b["ghi_rc"]
+
+    # adding absorbed radiation values for front, back and both sides.
+    output["poa_ref_cor_front"] = data_a["poa_ref_cor"]
+    output["poa_ref_cor_back"] = data_b["poa_ref_cor"]
+
+    # adding both here at 100% for temperature calculations
+    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"]
+
+    print("phase 5")
 
     # step 5. estimate panel temperature based on wind speed, air temperature and absorbed radiation
-    data = panel_temperature_estimator.add_estimated_panel_temperature(data)
+    output = panel_temperature_estimator.add_estimated_panel_temperature(output)
+
+    # Rewriting the total absorbed radiation using backsíde efficiency as a backside multiplier.
+    # This may appear odd, but I'm making the assumption that backside efficiency doesn't matter when it comes to
+    # temperatures, but it does matter for output estimation.
+    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"]*backside_efficiency
 
     # step 6. estimate power output
-    data = output_estimator.add_output_to_df(data)
+    output = output_estimator.add_output_to_df(output)
 
     if not extended_output:
         # if extended output not in use, return only some columns
-        return data[["T", "wind", "module_temp", "output"]]
+        print("output not extended, returning minimal set of values")
+        return output[["T", "wind", "module_temp", "output"]]
 
-    return data
+    print("output was extended, returning all values")
+    return output
 
 def process_radiation_df(data):
     """
