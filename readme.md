@@ -1,5 +1,43 @@
 
-# FMI open pv forecast package
+# FMI open pv forecast package - Custom build for shading research
+
+**Build date: 29.04.2026**
+
+**NOTE:** Read the text here before using the package. Everything stated here overrides code comments and 
+texts in other readme files if there are conflicting statements.
+
+### Purpose
+This custom build was made for a research project by Haoyang Dong. It should be identical to the base version, but
+the function `pvfc.process_radiation_df(radiation_df)` now checks if the input dataframe contains values
+`dni_shading` or `dhi_shading`. If these values are detected, `dni_poa` and `dhi_poa` are set as:
+
+`dni_poa = dni_poa * (1-dni_shading)`
+
+`dhi_poa = dhi_poa * (1-dhi_shading)`
+
+This modification is necessary because perez
+driesse model estimates the uniformity of the sky based on DNI and DHI radiation values. When DNI shading is applied
+before DNI_poa is calculated, the model changes the uniformity of the sky. The model may for example think that the 
+weather is cloudy and the sky is an uniform emitter if DNI is too low, causing modeling errors.
+
+
+### Example
+See file `shading_testfile.py` for a quick example of how shading can be applied. The example only shows constant
+shading being applied, but shading can and should be variable.
+
+
+
+### Future of this branch
+This branch will be left as is to keep a historical record of how things were in that specific article.
+
+The shading feature might or might not become a part of the main PV model in the future. Shading capability is really
+nice to have, but the DNI and DHI shading values are difficult to come by, and we'd like to keep the main package as 
+simple as possible.
+
+
+
+
+## --- Custom build notes end ---
 
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
 weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for

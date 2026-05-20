@@ -47,12 +47,15 @@ stateDiagram-v2
     
     s1 : 1. Data input
     s2 : 2. POA transposition
+    s21 : 2.1. Optional shading
     s3 : 3. Reflection estimation
     s4 : 4. Panel total radiation estimation
     s5 : 5. Panel temperature modeling
     s6 : 6. System output modeling
     
     s1 --> s2
+    s2 --> s21
+    s21 --> s3
     s2 --> s3
     s3 --> s4
     s4 --> s5
@@ -69,6 +72,8 @@ stateDiagram-v2
 5. Panel temperature modeling: Panel temperature is estimated.
 6. System output modeling: Output of the PV system is modeled using panel temperature and absorbed radiation.
 
+
+Step 2.1. is optional, it is activated if user uses their own data and that data happens to include shading values.
 ### Model as a python functions
 
 The python representation of the PV model is best thought as a single main PV model function and internal and external
@@ -427,6 +432,28 @@ DHI Perez model built into PVlib itself is used. DNI and GHI transposition model
 [DNI model](https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-beam/),
 [DHI model](https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-sky-diffuse/perez-sky-diffuse-model/)
 descriptions on Sandia's web page.
+
+---
+
+## Step 2.1. Shading estimation
+
+This is an optional step. If the dataframe contains the column `dni_shading`, the `dni_poa` value calculated in step 2.
+will be set as:
+
+`dni_poa = dni_poa * (1-dni_shading)`.
+
+
+If `dhi_shading` exists, then:
+
+`dhi_poa = dhi_poa * (1-dhi_shading)`
+
+Applying shading here is a bit odd, but it has to do with how Perez-Driesse DHI transposition model uses DHI **and** DNI
+to calculate dhi_poa. If shading is applied earlier, it messes with Perez Driesse.
+
+I ran some tests on this using 1kw system simulations. If DNI is set at 0 before Perez Driesse, then highest daily value
+for `dhi_poa` during the test day was ~50W. But when DNI was left untouched, `dhi_poa` peaked at 75W. DNI manipulation also
+changed the geometry of `dhi_poa`. This 25W delta is fairly significant as it occurs when panels are shaded, meaning when
+dhi is the main contributor of PV production. 
 
 ---
 
