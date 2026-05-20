@@ -22,6 +22,7 @@ from .pv_forecaster import set_default_wind_speed
 # toggles
 from .pv_forecaster import set_extended_output
 from .pv_forecaster import set_location
+from .pv_forecaster import set_snow_sliding
 # optional system parameters
 from .pv_forecaster import set_module_elevation
 from .pv_forecaster import set_nominal_power_kw
@@ -57,6 +58,7 @@ __all__ = [
     # toggles
     "set_extended_output",
     "set_cache",
+    "set_snow_sliding",
 
     # external usage
     "process_radiation_df",

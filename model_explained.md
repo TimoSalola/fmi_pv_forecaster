@@ -562,6 +562,50 @@ PhD thesis (Sandia Naitional Laboratories, 2004).
 
 ---
 
+
+### 5.1. Snow sliding modeling
+
+Snow sliding is the phenomena where snow on the panels is heated to a temperature at which small layer of water can 
+form between the panel surface and the snow on top of it. When this occurs, gravity can slide some or all the snow from the
+panel surface. The model used by this package is the based on the Marion model. _"Measured and modeled photovoltaic 
+system energy losses from snow for Colorado and Wisconsin locations"_ Marion et al. 2013. The original Marion model 
+returns a boolean value which describes if snow sliding conditions are possible.
+
+---
+**Our model:**
+
+```
+"degrees above snowsliding" = T_air + POA/80
+```
+Where:
+
+* T_air is air temperature in Celsius.
+* POA is radiation on solar panel surface in W/m².
+* "degrees above snowsliding is how many degrees above "snow would slide" our panels are at. 
+
+Example:
+
+T_air = -1C, POA = 160W/m²
+```
+"degrees above snowsliding" = T_air + POA/80
+"degrees above snowsliding" = -1 + 160/80
+"degrees above snowsliding" = -1 + 2
+"degrees above snowsliding" = 1
+```
+In this case, air temperature is -1C and snow should not melt or slide. But due to solar radiation, snow on the panel
+surface is actively melting. Snow will continue melting unless air temperature drops by 1 degree or radiation decreases
+by 80W/m².
+
+Knowing how far we are from snow melting point can be useful if the there's some bias present in local temperatures.
+Or if users want to if there's even a slim chance that snow could melt, or be very sure that snow will melt when the 
+model suggests so.
+
+
+
+
+
+
+
 ## Step 6. Output estimation
 
 Final output of the PV model is estimated by using Huld 2010 model. This same model is sometimes referred
@@ -653,6 +697,7 @@ data averaging, Solar Energy, 84 324--338 (2010).
 # 2. Extras
 
 This section contain tips and things we have noticed while using the PV model.
+
 
 ## 2.1. Adding shadow modeling to the PV model
 

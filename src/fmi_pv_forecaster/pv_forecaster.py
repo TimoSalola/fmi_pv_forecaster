@@ -20,6 +20,8 @@ panel_azimuth = None
 extended_output = False  # set to true and the radiation parameters and intermediate steps of the pv output calculation
 # will be included in the output
 
+snow_slide_modeling = False
+
 power_rating = 1  # power in kw
 
 timezone = "UTC"
@@ -185,6 +187,20 @@ def set_cache(cache_on):
 
     meps_loader.cache_enabled = cache_on
 
+def set_snow_sliding(snow_on):
+    """
+    This is a toggle for turning snow sliding on and off.
+    Adds column "snow sliding" to output dataframe. Value in column is in celcius. If value is positive, snow sliding
+    is likely to occur due to melting snow. If negative, snow sliding is unlikely.
+
+    The further the value is from zero, the stronger the effect is.
+    """
+    global snow_slide_modeling
+    snow_slide_modeling = snow_on
+
+
+
+
 
 def set_timezone(timezone_string):
     global timezone
@@ -283,15 +299,29 @@ def process_radiation_df(data):
     # step 4. compute sum of reflection-corrected components:
     data = reflection_estimator.add_reflection_corrected_poa_to_df(data)
 
+
     # step 5. estimate panel temperature based on wind speed, air temperature and absorbed radiation
     data = panel_temperature_estimator.add_estimated_panel_temperature(data)
+
+    if snow_slide_modeling:
+        #print("Snow slide modeling is on")
+        # uses a modified marion model, has to be after step 5 due to T requirement, which is only added to the data in
+        # step 5 if it is missing.
+        """
+        Marion model:
+        T_ambient > Gpoa/-80
+        """
+        data["degrees above snowsliding"] = data["T"]+data["poa"]/80
 
     # step 6. estimate power output
     data = output_estimator.add_output_to_df(data)
 
     if not extended_output:
         # if extended output not in use, return only some columns
-        return data[["T", "wind", "module_temp", "output"]]
+        if snow_slide_modeling:
+            return data[["T", "wind", "module_temp","degrees above snowsliding", "output"]]
+        else:
+            return data[["T", "wind", "module_temp", "output"]]
 
     return data
 

@@ -83,6 +83,21 @@ pvfc.set_default_wind_speed(wind_ms)
 
 ---
 
+## 1.4. Toggles
+
+```python
+pvfc.set_extended_output(True)
+pvfc.set_snow_sliding(True)
+```
+Extended output will not remove extra columns generated during processing of the input dataframe. This may have
+uses for debugging or other purposes.
+
+Set snow sliding will add a new column "degrees above snowsliding" into the output dataframe. Positive values mean
+that snow on panels would either melt or slide off and negative values mean this is unlikely to happen. Modeling is 
+based on Marion 2013 model. The value in this column is essentially the same as how many degrees air temperature could
+drop before snow sliding would not happen. 
+
+
 # 2. Forecasting functions
 
 Calling a single forecasting function is enough to generate a forecast. The forecasting functions can be split into 3
