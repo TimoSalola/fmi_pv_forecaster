@@ -13,7 +13,7 @@ import pandas as pd
 
 from . import default_parameters
 
-rated_power = 1
+rated_power = 1  # kw rating
 
 
 def print_full(x: pandas.DataFrame):
@@ -67,7 +67,7 @@ def add_output_to_df(df: pandas.DataFrame) -> pandas.DataFrame:
     return df
 
 
-def __estimate_output(absorbed_radiation: float, panel_temp: float) -> float:
+def __estimate_output(absorbed_radiation: float, panel_temp: float) -> numpy.floating:
     """
     Huld 2010 model
     T.~Huld, R.~Gottschalg, H.~G. Beyer, and M.~Topič,
@@ -86,12 +86,15 @@ def __estimate_output(absorbed_radiation: float, panel_temp: float) -> float:
     A minimum efficiency of 50% has been set. Adjust [min_efficiency] if this is not to your liking. This will not
     affect the performance of the model a lot, but it will eliminate negative output estimates and thus a limit.
 
+    A maximum efficiency of 100% has been set.
+
     :param absorbed_radiation: Solar irradiance absorbed by m² of solar panel surface.
     :param panel_temp: Estimated solar panel temperature.
     :return: Estimated system output in watts.
     """
 
     min_efficiency = 0.5
+    max_efficiency = 1.0
 
     # huld 2010 constants
     k1 = -0.017162
@@ -129,6 +132,7 @@ def __estimate_output(absorbed_radiation: float, panel_temp: float) -> float:
 
     efficiency = base + part_k1 + part_k2 + part_k3k4k5 + part_k6
     efficiency = numpy.maximum(efficiency, min_efficiency)
+    efficiency = numpy.minimum(efficiency, max_efficiency)
     # huld efficiencies can be negative, fixing that here
 
     # print(absorbed_radiation)

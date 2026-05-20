@@ -64,7 +64,7 @@ def temperature_of_module(absorbed_radiation: float, wind: float,
     King 2004 model
     D.~King, J.~Kratochvil, and W.~Boyson,
     Photovoltaic Array Performance Model Vol. 8,
-    PhD thesis (Sandia Naitional Laboratories, 2004).
+    PhD thesis (Sandia National Laboratories, 2004).
     """
 
     # two empirical constants
@@ -73,10 +73,11 @@ def temperature_of_module(absorbed_radiation: float, wind: float,
 
     # wind is sometimes given as west/east components
 
-    # wind speed at model elevation, assumes 0 speed at ground, wind speed vector len at 2m and forms a
-    # curve which describes the wind speed transition from 0 to 10m wind speed to higher
-    wind_speed = (module_elevation / 10) ** 0.1429 * wind
+    # wind speed at model elevation, assumes 0 speed at ground, given wind value at 10m and generates a transition curve
+    # that goes from 0 to 10 and above. Should be somewhat accurate.
+    wind_speed = wind * (module_elevation / 10) ** 0.1429
 
+    # actual model temperature equation
     module_temperature = absorbed_radiation * math.e ** (constant_a + constant_b * wind_speed) + air_temperature
 
     return module_temperature

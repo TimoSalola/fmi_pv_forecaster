@@ -73,8 +73,10 @@ def irradiance_df_to_poa_df(irradiance_df: pandas.DataFrame, latitude, longitude
 
 """
 PROJECTION FUNCTIONS
-4 functions for 3 components, 2 functions for DNI as either date or angle of incidence can be used for computing the
+5 functions for 3 components, 2 functions for DNI as either date or angle of incidence can be used for computing the
 same result.
+
+2 functions for DHI as the sky can be assumed as uniform on non-uniform(perez)
 """
 
 
@@ -88,8 +90,8 @@ def __project_dni_to_panel_surface_using_time_fast(dni: float, dt: datetime,
     This version of the function is fairly well optimized.
     """
 
-    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_fast(dt, latitude, longitude,
-                                                                                     tilt, azimuth)
+    angle_of_incidence = astronomical_calculations.get_solar_angle_of_incidence_limited(dt, latitude, longitude,
+                                                                                        tilt, azimuth)
     output = numpy.abs(__project_dni_to_panel_surface_using_angle(dni, angle_of_incidence))
 
     return output
@@ -107,22 +109,26 @@ def __project_dni_to_panel_surface_using_angle(dni: float, angle_of_incidence: f
     return dni * numpy.cos(numpy.radians(angle_of_incidence))
 
 
-def __project_dhi_to_panel_surface(dhi: float, tilt) -> float:
-    """
-    Uses atmosphere scattered sunlight and solar panel angles to estimate how much of the scattered light is radiated
-    towards solar panel surfaces.
-    :param dhi: Atmosphere scattered irradiation.
-    :return: Atmosphere scattered irradiation projected to solar panel surfaces.
-    """
-    return dhi * ((1.0 + math.cos(numpy.radians(tilt))) / 2.0)
-
-
 def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: float, latitude, longitude,
-                                              tilt: float, azimuth: float) -> float:
+                                              tilt: float, azimuth: float, driesse=True) -> float:
     """
-    Alternative dhi model,
+    Often more accurate DHI transposition model.
     Calculated internally by pvlib, pvlib documentation at:
     https://pvlib-python.readthedocs.io/en/stable/reference/generated/pvlib.irradiance.perez_driesse.html
+
+    Perez model assumes that the region of the sky near to sun is brighter than the rest. The model contains a data table
+    from which values are read and used for the transposition. This works well regardless of the angle of the panels and
+    the position of the sun.
+
+    The downside is that regular perez has discontinuities which may show up when the model switches between values
+    in the perez table. These discontinuities can be somewhat significant when the ratio of dhi and dni is abnormal or
+    when the sun is near or even below the horizon.
+
+    Discontinuities are fixed with perez-driesse which is a continuous version of the same perez model.
+
+    One remaining issue is that if dhi is 100W and the sun is far enough below the horizon, this
+    model will give 0W as panel projected value even when panel tilt is zero. You would not expect dhi to be 100W when
+    sun is below the horizon, but you would expect the panel surface radiation from dhi to be 100W when tilt is 0.
     """
 
     # function parameters
@@ -141,13 +147,14 @@ def __project_dhi_to_panel_surface_perez_fast(time: datetime, dhi: float, dni: f
     # air mass
     airmass = astronomical_calculations.get_air_mass_fast(time, latitude, longitude)
 
-    # old perez function
-    # dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth,dhi, dni, dni_extra,
-    # solar_zenith, solar_azimuth, airmass, return_components=False)
-
-    # modified perez
-    dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
-                                               solar_zenith, solar_azimuth, airmass, return_components=False)
+    # Continuous perez
+    if driesse:
+        dhi_perez = pvlib.irradiance.perez_driesse(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                                                   solar_zenith, solar_azimuth, airmass, return_components=False)
+    else:
+        # piecewise perez
+        dhi_perez = pvlib.irradiance.perez(surface_tilt, surface_azimuth, dhi, dni, dni_extra,
+                                           solar_zenith, solar_azimuth, airmass, return_components=False)
 
     return dhi_perez
 
@@ -159,10 +166,28 @@ def __project_ghi_to_panel_surface(ghi: float, tilt: float,
     https://pvpmc.sandia.gov/modeling-guide/1-weather-design-inputs/plane-of-array-poa-irradiance/calculating-poa-irradiance/poa-ground-reflected/
 
     Uses ground albedo and panel angles to estimate how much of the sunlight per 1m² of ground is radiated towards solar
-    panel surfaces.
+    panel surfaces. Expected value is 0 for tilt = 0, increases as tilt increases.
     :param ghi: Ground reflected solar irradiance.
     :return: Ground reflected solar irradiance hitting the solar panel surface.
     """
     step1 = (1.0 - math.cos(numpy.radians(tilt))) / 2
     step2 = ghi * albedo * step1
     return step2  # ghi * config.albedo * ((1.0 - math.cos(numpy.radians(config.tilt))) / 2.0)
+
+
+"""
+UNUSED FUNCTIONS BELOW
+"""
+
+
+def __project_dhi_to_panel_surface(dhi: float, tilt) -> float:
+    """
+    Uses atmosphere scattered sunlight and solar panel angles to estimate how much of the scattered light is radiated
+    towards solar panel surfaces.
+
+    This version uses the isotropic sky model. Meaning it will assume the sky as a uniform emitter. Accurate when panel
+    tilt is low regardless of the position of the sun.
+    :param dhi: Atmosphere scattered irradiation.(Radiation on horizontal plane, direct sunlight is blocked)
+    :return: Atmosphere scattered irradiation projected to solar panel surfaces.
+    """
+    return dhi * ((1.0 + math.cos(numpy.radians(tilt))) / 2.0)

@@ -2,14 +2,12 @@ This document has examples on how to use the python package.
 
 **Table of contents**
 <!-- TOC -->
-
-* [Example 1: FMI weather forecast based PV system output](#example-1-fmi-weather-forecast-based-pv-system-output)
-* [Example 2: Plotting clearsky and FMI weather based forecasts into the same plot](#example-2-plotting-clearsky-and-fmi-weather-based-forecasts-into-the-same-plot)
-* [Example 3. Processing external data with the PV model](#example-3-processing-external-data-with-the-pv-model)
-* [Example 4. Forecast interpolation](#example-4-forecast-interpolation)
-* [Example 5. Estimating clearsky power for custom time interval](#example-5-estimating-clearsky-power-for-custom-time-interval)
-* [Example 6. Multiple panel angles](#example-6-multiple-panel-angles)
-
+  * [Example 1: FMI weather forecast based PV system output](#example-1-fmi-weather-forecast-based-pv-system-output)
+  * [Example 2: Plotting clearsky and FMI weather based forecasts into the same plot](#example-2-plotting-clearsky-and-fmi-weather-based-forecasts-into-the-same-plot)
+  * [Example 3. Processing external data with the PV model](#example-3-processing-external-data-with-the-pv-model)
+  * [Example 4. Forecast interpolation](#example-4-forecast-interpolation)
+  * [Example 5. Estimating clearsky power for custom time interval](#example-5-estimating-clearsky-power-for-custom-time-interval)
+  * [Example 6. Multiple panel angles](#example-6-multiple-panel-angles)
 <!-- TOC -->
 
 ## Example 1: FMI weather forecast based PV system output
@@ -78,8 +76,6 @@ pvfc.set_angles(25, 235)  # south-west facing panels
 pvfc.set_location(55.6804144, 12.5821649)  # near Copenhagen, Denmark
 pvfc.set_nominal_power_kw(10)
 
-pvfc.set_clearsky_fc_timestep(5)
-
 # setting parameters which affect clearsky forecast
 pvfc.set_default_air_temp(-5)
 pvfc.set_default_albedo(0.7)
@@ -88,7 +84,7 @@ pvfc.set_default_albedo(0.7)
 data = pvfc.get_default_fmi_forecast()
 
 # generating clearsky forecast
-data_clearsky = pvfc.get_default_clearsky_estimate()
+data_clearsky = pvfc.get_default_clearsky_forecast(5)
 
 # plotting forecast
 fig, ax = plt.subplots(layout='constrained')
@@ -400,13 +396,12 @@ size_2 = 2  # 2kw
 pvfc.set_location(65.013297, 25.4647086)  # The exact location of Toripoliisi in Oulu, Finland
 pvfc.set_default_air_temp(15)
 pvfc.set_default_albedo(0.2)
-pvfc.set_clearsky_fc_timestep(5)
 
 # setting data for set 1 and generating forecast for panel group 1
 pvfc.set_angles(tilt_1, azimuth_1)
 pvfc.set_nominal_power_kw(size_1)
 data_for_panels1 = pvfc.get_default_fmi_forecast()
-clearsky_for_panels1 = pvfc.get_default_clearsky_estimate()
+clearsky_for_panels1 = pvfc.get_default_clearsky_forecast(5)
 # ^ these lines perform a single API call to the FMI servers
 
 # pvfc.force_clear_fmi_cache() # this line could be used to avoid caching but why would you do that?
@@ -415,7 +410,7 @@ clearsky_for_panels1 = pvfc.get_default_clearsky_estimate()
 pvfc.set_angles(tilt_2, azimuth_2)
 pvfc.set_nominal_power_kw(size_2)
 data_for_panels2 = pvfc.get_default_fmi_forecast()
-clearsky_for_panels2 = pvfc.get_default_clearsky_estimate()
+clearsky_for_panels2 = pvfc.get_default_clearsky_forecast(5)
 # ^ that bit there does not actually perform another server requests as the radiadiation and weather data
 # was cached from panel group 1 request.
 

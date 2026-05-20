@@ -102,7 +102,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                 # print("Cache is new at " + str(seconds_since_cache_update) + " seconds. Reading data from cache.
                 # This line should not print")
                 pass
-
+            print("Cached server call done.")
             return cached_data
         else:
             raise Exception(
@@ -129,6 +129,8 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                                       "endtime=" + str(end_time),
                                       'parameters=' + parameters_str])
     data = snd.data
+
+    print("Server call done.")
 
     # checking if we got any data
     if len(data) == 0:
@@ -201,6 +203,8 @@ def collect_fmi_opendata(latitude: float, longitude: float,
              'T', 'Wind speed', 'Total cloud cover']]
 
     df.columns = ["dni", "dhi", "ghi", "dir_hi", "albedo", "T", "wind", "cloud_cover"]
+    df = df.drop('dir_hi', axis=1)
+
 
     # restricting values to zero
     clip_columns = ["dni", "dhi", "ghi"]

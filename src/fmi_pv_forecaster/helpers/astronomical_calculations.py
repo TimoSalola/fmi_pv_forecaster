@@ -29,7 +29,7 @@ import pvlib.atmosphere
 from pvlib import location, irradiance
 
 
-def get_solar_angle_of_incidence_fast(dt: datetime, latitude, longitude, tilt, azimuth) -> float:
+def get_solar_angle_of_incidence_fast_unlimited(dt: datetime, latitude, longitude, tilt, azimuth) -> float:
     """
     Estimates solar angle of incidence at given datetime. Other parameters, tilt, azimuth and geolocation are read from
     config.py.
@@ -46,11 +46,19 @@ def get_solar_angle_of_incidence_fast(dt: datetime, latitude, longitude, tilt, a
     # angle of incidence, angle between direct sunlight and solar panel normal
     angle_of_incidence = irradiance.aoi(panel_tilt, panel_azimuth, solar_apparent_zenith, solar_azimuth)
 
-    # restricting AOI values as projection functions do not expect AOI higher than 90. Should never be lower than 0 but
-    # setting a limit anyways
-    angle_of_incidence = angle_of_incidence.clip(lower=0, upper=90)
+    # if len(angle_of_incidence) == 1:
+    #    return angle_of_incidence.values[0]
 
     return angle_of_incidence
+
+
+def get_solar_angle_of_incidence_limited(dt, latitude, longitude, tilt, azimuth) -> float:
+    """
+    Returns AOI limited to range 0 to 90
+    Some transposition functions etc. require angle to be in that range.
+    """
+    angle_of_incidence = get_solar_angle_of_incidence_fast_unlimited(dt, latitude, longitude, tilt, azimuth)
+    return angle_of_incidence.clip(lower=0, upper=90)
 
 
 def get_air_mass_fast(time: datetime, latitude, longitude) -> float:

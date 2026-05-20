@@ -20,6 +20,7 @@ from fmi_pv_forecaster.helpers import astronomical_calculations
 # panel reflectance constant, empirical value. Solar panels with better optical coatings would have a lower value where
 # as uncoated panels would have a higher value. Dust on panels increases reflectance_constant.
 # 0.159 is given as an average value for polycrystalline silicon module reflectance
+# 0.169 is given in the same paper as monocrystalline reflectance
 reflectance_constant = 0.159
 
 
@@ -121,7 +122,7 @@ def __dni_reflected(dt: datetime, latitude, longitude, tilt, azimuth) -> float:
 
     a_r = reflectance_constant
 
-    AOI = astronomical_calculations.get_solar_angle_of_incidence_fast(dt, latitude, longitude, tilt, azimuth)
+    AOI = astronomical_calculations.get_solar_angle_of_incidence_limited(dt, latitude, longitude, tilt, azimuth)
 
     # upper section of the fraction equation
     upper_fraction = math.e ** (-numpy.cos(numpy.radians(AOI)) / a_r) - math.e ** (-1.0 / a_r)
@@ -143,6 +144,9 @@ def __ghi_reflected(tilt) -> float:
     F_A(beta) in "Calculation of the PV modules angular losses under field conditions by means of an analytical model"
 
     """
+
+    if tilt == 0:
+        return 1
 
     # constants, these are from
     c1 = 4.0 / (3.0 * math.pi)
@@ -170,6 +174,7 @@ def __dhi_reflected(tilt) -> float:
     :return: [0,1] float, 0 no light reflected, 1 no light absorbed by panels.
 
     F_D(beta) in "Calculation of the PV modules angular losses under field conditions by means of an analytical model"
+
     """
     # constants
 
@@ -185,7 +190,7 @@ def __dhi_reflected(tilt) -> float:
     part2 = c1 * part1 + c2 * (part1 ** 2.0)
     part3 = (-1.0 / a_r) * part2
 
-    dhi_reflected = math.e ** part3
+    dhi_reflected = math.exp(part3)
 
     return dhi_reflected
 
