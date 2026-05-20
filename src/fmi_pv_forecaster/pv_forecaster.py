@@ -537,12 +537,13 @@ def process_radiation_df_bifacial(data_in):
 
     # step 4. compute sum of reflection-corrected components:
     if "poa_ref_cor" in data_a.columns:
-        print("Reflection corrected POA already in dataframe, using it.")
+        #print("Reflection corrected POA already in dataframe, using it.")
+        pass
     else:
         data_a = reflection_estimator.add_reflection_corrected_poa_to_df(data_a)
 
     if "poa_ref_cor_b" in data_b.columns:
-        print("Reflection corrected POA already in dataframe, using it.")
+        #print("Reflection corrected POA already in dataframe, using it.")
         data_b["poa_ref_cor"] = data_b["poa_ref_cor_b"]
     else:
         data_b = reflection_estimator.add_reflection_corrected_poa_to_df(data_b)
@@ -575,7 +576,8 @@ def process_radiation_df_bifacial(data_in):
     if "module_temp" not in data_c.columns:
         data_c = panel_temperature_estimator.add_estimated_panel_temperature(data_c)
     else:
-        print("Module temp already in data, using value from \"module_temp\" -column.")
+        # print("Module temp already in data, using value from \"module_temp\" -column.")
+        pass
 
     # step 6. estimate power output
     data_c = output_estimator.add_output_to_df(data_c)
@@ -603,7 +605,7 @@ def process_radiation_df(data_in):
 
     #print("bifacial check")
     if bifacial:
-        print("was bifacial, using bifacial processing instead")
+        print("was bifacial, using bifacial processing")
         return process_radiation_df_bifacial(data)
 
     #print("was not bifacial, using common processing instead")
@@ -628,7 +630,7 @@ def process_radiation_df(data_in):
                                                              panel_azimuth)
 
     if "dni_shading" in data.columns:
-        print("dni_shading column detected in dataframe, multiplying dni_poa with (1-dni_shading)")
+        #print("dni_shading column detected in dataframe, multiplying dni_poa with (1-dni_shading)")
 
         # print("values pre change:")
         # print(data["dni_poa"])
@@ -637,7 +639,7 @@ def process_radiation_df(data_in):
         # print(data["dni_poa"])
 
     if "dhi_shading" in data.columns:
-        print("dhi_shading column detected in dataframe, multiplying dhi_poa with (1-dhi_shading)")
+        #print("dhi_shading column detected in dataframe, multiplying dhi_poa with (1-dhi_shading)")
 
         # print("values pre change:")
         # print(data["dhi_poa"])
@@ -658,12 +660,13 @@ def process_radiation_df(data_in):
         data = reflection_estimator.add_reflection_corrected_poa_to_df(data)
 
     # step 5. estimate panel temperature based on wind speed, air temperature and absorbed radiation
-    print("Columns before module temp adding:")
-    print(data.columns)
+    #print("Columns before module temp adding:")
+    #print(data.columns)
     if "module_temp" not in data.columns:
         data = panel_temperature_estimator.add_estimated_panel_temperature(data)
     else:
-        print("Module temp already in data, using value from \"module_temp\" -column.")
+        #print("Module temp already in data, using value from \"module_temp\" -column.")
+        pass
 
     # step 6. estimate power output
     data = output_estimator.add_output_to_df(data)
