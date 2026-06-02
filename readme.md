@@ -1,6 +1,8 @@
 
 # FMI open pv forecast package
 
+Version 0.1.1
+
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
 weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for
 a 66-hour period. These forecasts take panel orientation, panel surface reflections, panel temperature, and other
@@ -18,6 +20,8 @@ See [Examples](examples.md) for examples on how to use the package.
 [Model explanation](model_explained.md) for details on how the PV model works.
 And [Package documentation](package_documentation.md) for a programmer-oriented description of functions built
 into the package.
+
+Bifacial modeling is new in 0.1.1, see [Bifacial modeling](bifacial_modeling.md) for additional information.
 
 ## **Table of contents:**
 
@@ -37,13 +41,18 @@ into the package.
 
 ## Installing the package
 
-As of early 2026, the package is still in development phase. If you would like to try it out, download
-`fmi_pv_forecast-0.1.0-py3-none-any.whl` from the dist/ folder and install it into your
+As of mid 2026, the package is still in development phase. If you would like to try it out, download
+`fmi_pv_forecast-0.1.1-py3-none-any.whl` from the dist/ folder and install it into your
 python environment. This can be done with the command
 `pip install --force-reinstall wheel fmi_pv_forecast-0.1.0-py3-none-any.whl`
 After package is installed, it can be imported as shown in the examples.
-
 ---
+
+## Version history:
+
+- 0.1.1 (2026-06-02) Added bifaciality and Marion -based snow sliding.
+- 0.1.0 Initial PV Model with monofacial modeling features.
+
 
 ## FMI PV forecasts
 

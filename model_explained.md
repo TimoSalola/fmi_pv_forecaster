@@ -1,4 +1,5 @@
-# PV model explained
+# PV model explained 
+Version 0.1.1
 
 This document explains the steps of the PV model. The document is split into two sections, model overview for those who
 would like to understand the basics and a more detailed description for those who want to use the model in research
@@ -747,24 +748,23 @@ This section contain tips and things we have noticed while using the PV model.
 
 ## 2.1. Adding shadow modeling to the PV model
 
-If you want to model shading from trees or buildings with the PV model, the results should be
-accurate enough if you just
-multiply the `dni` values in the input dataframe by a shading coefficient.
-To do this, you need to figure out how strong the shading is at each moment in time. The hardest bit here is figuring
-out how to generate a shadow map of the PV site. This is challenging and we do not currently have any easy methods
-for shadow map generation that we could recommend.
+If you'd like to add shading modeling to the system (shading = direct radiation is decreased by an obstacle), 
+fairly accurate results can be achieved by multiplying DNI radiation component by a shading coefficient. This
+coefficient should be Sun angle dependent, and figuring out how to generate a shading map will be left to the user.
+
+This method is not physically 100% accurate due to how DNI values are required by Perez DHI transpositions. The results
+will be good, but if you need the best possible results, DNI shading should be applied after panel transpositions.
+You can do this either by building a custom version of the package, or asking us for a custom build of the model.
 
 ## 2.2. Snow related issues
 
 ### 2.2.1. Snow sliding
 
-In Finland and other northern countries, having snow on the panels decreases panel output significantly. The model
-does not take this into account as snow is a complex matter. However, snow has a habit of sliding off the panels when
-panel surface temperature reaches 0 degrees. The moment when this occurs can be modeled with the PV model.
-Snow reflects approximately 60% of incoming light away and so if you create a custom forecasting function which
-multiplies
-`[dni, dhi, ghi]` by 0.6, the panel temperatures contained in the output should be close to actual experienced panel
-temperatures.
+Snow sliding modeling is new in 0.1.1. This is based on the Marion snow sliding model, improvements and a more
+complete snow sliding model implementation is among the next goals for this PV package.
+
+As of now, the model calculates the temperature of the snow on the panels and if this temperature is positive,
+snow sliding should occur. 
 
 ### 2.2.2. Snow reflections
 
