@@ -44,7 +44,7 @@ Bifacial modeling is new in 0.1.1, see [Bifacial modeling](bifacial_modeling.md)
 As of mid 2026, the package is still in development phase. If you would like to try it out, download
 `fmi_pv_forecast-0.1.1-py3-none-any.whl` from the dist/ folder and install it into your
 python environment. This can be done with the command
-`pip install --force-reinstall wheel fmi_pv_forecast-0.1.0-py3-none-any.whl`
+`pip install --force-reinstall wheel fmi_pv_forecast-0.1.1-py3-none-any.whl`
 After package is installed, it can be imported as shown in the examples.
 ---
 
