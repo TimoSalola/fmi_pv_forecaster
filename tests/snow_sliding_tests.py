@@ -50,8 +50,7 @@ def test_clearsky_forecast_default_range():
     pvfc.set_snow_sliding(True)
 
 
-
-    powerdata = pvfc.get_default_clearsky_estimate()
+    powerdata = pvfc.get_default_clearsky_forecast()
 
     print_full(powerdata)
 

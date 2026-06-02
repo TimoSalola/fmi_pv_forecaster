@@ -20,6 +20,9 @@ panel_azimuth = None
 extended_output = False  # set to true and the radiation parameters and intermediate steps of the pv output calculation
 # will be included in the output
 
+bifacial = False
+backside_efficiency = 1.0
+
 snow_slide_modeling = False
 
 power_rating = 1  # power in kw
@@ -187,6 +190,14 @@ def set_cache(cache_on):
 
     meps_loader.cache_enabled = cache_on
 
+def set_bifacial(bifacial_on):
+    global bifacial
+    bifacial = bifacial_on
+
+def set_relative_bifacial_backside_efficiency(bs_efficiency):
+    global relative_bifacial_backside_efficiency
+    relative_bifacial_backside_efficiency = bs_efficiency
+
 def set_snow_sliding(snow_on):
     """
     This is a toggle for turning snow sliding on and off.
@@ -269,6 +280,7 @@ Starting with radiation table processing.
 """
 
 
+
 def process_radiation_df(data):
     """
     This function processes a radiation dataframe and estimates the output of a pv system.
@@ -281,7 +293,21 @@ def process_radiation_df(data):
     Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
     """
 
-    if "cloud_cover" not in data.index:
+    #print("bifacial check")
+    if bifacial:
+        #print("was bifacial, using bifacial processing instead")
+        return process_radiation_df_bifacial(data)
+
+    #print("was not bifacial, using common processing instead")
+
+    if panel_tilt is None or panel_azimuth is None:
+        raise ValueError(
+            "Tilt and azimuth must be defined before PV output is estimated."
+            " Call pv_forecast.set_angles(tilt, azimuth) first with"
+            " valid 0-90, 0-360 degree panel angles."
+        )
+
+    if "cloud_cover" not in data.columns:
         # If using pvlib clearsky data, there will not be a cloud cover column. Added here for compatibility.
         data["cloud_cover"] = 0
 
@@ -325,13 +351,139 @@ def process_radiation_df(data):
 
     return data
 
+def process_radiation_df_bifacial(data_in):
+    """
+    This function processes a radiation dataframe and estimates the output of a pv system.
+
+    The input df must have columns:
+    'time', 'dni', 'dhi', 'ghi'
+    additional columns "T", "wind" and "albedo" are also useful
+
+    time column is the mathematical point for which each row in the data is simulated for.
+    Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
+    """
+
+    if "cloud_cover" not in data_in.columns:
+        # If using pvlib clearsky data, there will not be a cloud cover column. Added here for compatibility.
+        data_in["cloud_cover"] = 0
+
+    # panel main surface:
+    data_a = data_in.copy()
+    # panel back surface:
+    data_b = data_in.copy()
+
+    if panel_tilt is None or panel_azimuth is None:
+        raise ValueError(
+            "Tilt and azimuth must be defined before PV output is estimated."
+            " Call pv_forecast.set_angles(tilt, azimuth) first with"
+            " valid 0-90, 0-360 degree panel angles."
+        )
+
+
+
+    #print("########### phase 1:")
+    #print("data a:")
+    #print_full(data_b)
+    #print("data b:")
+    #print_full(data_b)
+
+    # step 2. project irradiance components to plane of array:
+    # panel front surface, same as always
+    data_a = irradiance_transpositions.irradiance_df_to_poa_df(data_a, site_latitude, site_longitude, panel_tilt,
+                                                             panel_azimuth)
+
+
+
+
+
+    # panel back surface, requires recomputation of panel angles
+    azimuth_b = (panel_azimuth + 180) % 360
+    tilt_b = 180-panel_tilt
+
+    #print("azimuth_b: " + str(azimuth_b))
+    #print("tilt_b: " + str(tilt_b))
+    data_b = irradiance_transpositions.irradiance_df_to_poa_df(data_b, site_latitude, site_longitude, tilt_b,
+                                                             azimuth_b)
+
+    #print("########### phase 2:")
+    #print("tilt_a: " + str(panel_tilt))
+    #print("azimuth_a: " + str(panel_azimuth))
+    #print("data a:")
+    #print_full(data_b)
+    #print("azimuth_b: " + str(azimuth_b))
+    #print("tilt_b: " + str(tilt_b))
+    #print("data b:")
+    #print_full(data_b)
+
+    # step 3. simulate how much of irradiance components is absorbed:
+    data_a = reflection_estimator.add_reflection_corrected_poa_components_to_df(data_a, site_latitude, site_longitude,
+                                                                              panel_tilt, panel_azimuth)
+
+    data_b = reflection_estimator.add_reflection_corrected_poa_components_to_df(data_b, site_latitude, site_longitude,
+                                                                              tilt_b, azimuth_b)
+
+
+
+
+
+    # step 4. compute sum of reflection-corrected components:
+    #print("Phase 4")
+    data_a = reflection_estimator.add_reflection_corrected_poa_to_df(data_a)
+
+    data_b = reflection_estimator.add_reflection_corrected_poa_to_df(data_b)
+
+    #print(data_a)
+    #print(data_a.columns)
+    #print(data_b)
+    #print(data_b.columns)
+
+    output = data_a.copy()
+
+    # 'time', 'ghi', 'dni', 'dhi', 'cloud_cover', 'dni_poa', 'dhi_poa',
+    #        'ghi_poa', 'poa', 'dni_rc', 'dhi_rc', 'ghi_rc', 'poa_ref_cor'
+
+    output["dni_poa_back"] = data_b["dni_poa"]
+    output["dhi_poa_back"] = data_b["dhi_poa"]
+    output["ghi_poa_back"] = data_b["ghi_poa"]
+
+    output["dni_rc_back"] = data_b["dni_rc"]
+    output["dhi_rc_back"] = data_b["dhi_rc"]
+    output["ghi_rc_back"] = data_b["ghi_rc"]
+
+    # adding absorbed radiation values for front, back and both sides.
+    output["poa_ref_cor_front"] = data_a["poa_ref_cor"]
+    output["poa_ref_cor_back"] = data_b["poa_ref_cor"]
+
+    # adding both here at 100% for temperature calculations
+    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"]
+
+    #print("phase 5")
+
+    # step 5. estimate panel temperature based on wind speed, air temperature and absorbed radiation
+    output = panel_temperature_estimator.add_estimated_panel_temperature(output)
+
+    # Rewriting the total absorbed radiation using backsíde efficiency as a backside multiplier.
+    # This may appear odd, but I'm making the assumption that backside efficiency doesn't matter when it comes to
+    # temperatures, but it does matter for output estimation.
+    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"]*backside_efficiency
+
+    # step 6. estimate power output
+    output = output_estimator.add_output_to_df(output)
+
+    if not extended_output:
+        # if extended output not in use, return only some columns
+        #print("output not extended, returning minimal set of values")
+        return output[["T", "wind", "module_temp", "output"]]
+
+    #print("output was extended, returning all values")
+    return output
 
 """
 Flexible forecast functions with custom intervals:
 """
 
 
-def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60):
+def get_clearsky_forecast_for_interval(interval_start, interval_end, timestep=60):
     if site_latitude is None or site_longitude is None:
         raise ValueError(
             "Latitude and longitude must be defined before PV output is estimated."
@@ -346,12 +498,9 @@ def get_clearsky_estimate_for_interval(interval_start, interval_end, timestep=60
             " valid 0-90, 0-360 degree panel angles."
         )
 
-    # timeshifting
-    # this cannot be used as setting a minute is not possible, this kills time offset function
-    offset = fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset
 
     interval_start = datetime.datetime(year=interval_start.year, month=interval_start.month, day=interval_start.day,
-                                       hour=interval_start.hour, minute=offset)
+                                       hour=interval_start.hour, minute=0)
 
     # step 1. getting clearsky radiation
     data = __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep)
@@ -475,7 +624,7 @@ def set_clearsky_fc_time_offset(new_offset):
     fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_time_offset = new_offset
 
 
-def get_default_clearsky_estimate():
+def get_default_clearsky_forecast(timestep=60):
     """
     This function returns an approximation for the clearsky PV output during a time window which should cover the
     FMI forecast based PV output from "get_default_fmi_forecast()"
@@ -488,10 +637,10 @@ def get_default_clearsky_estimate():
     time_start = datetime.datetime(time_start.year, time_start.month, time_start.day, time_start.hour)
     time_end = time_start + datetime.timedelta(hours=68)
 
-    data = get_clearsky_estimate_for_interval(
+    data = get_clearsky_forecast_for_interval(
         time_start,
         time_end,
-        fmi_pv_forecaster.helpers.default_parameters.clearsky_fc_timestep)
+        timestep)
 
     return data
 
@@ -621,3 +770,28 @@ def add_local_time_column(df):
     df["local_time"] = idx.tz_convert(tz)
 
     return df
+
+
+def get_fmi_radiation_forecast():
+    """
+    This is a helper function for getting radiation data from FMI.
+    :return:
+    """
+    interval_start = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=6)
+    # the line above creates a timezone naive utc timestamp. If timezone is included, server will return errors.
+    # if time is local time, starting values will be wrong
+    # looking 4 hours into the past just for some historical data to be included.
+
+    interval_end = interval_start + datetime.timedelta(hours=70)
+
+    if site_latitude is None or site_longitude is None:
+        raise ValueError(
+            "Latitude and longitude must be defined before PV output is estimated."
+            "Call pv_forecast.set_location(latitude, longitude) first with"
+            " valid WGS84 coordinates."
+        )
+
+
+    data = __get_fmi_forecast_for_interval(interval_start, interval_end)
+
+    return data

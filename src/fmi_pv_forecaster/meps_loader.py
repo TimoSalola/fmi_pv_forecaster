@@ -102,7 +102,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                 # print("Cache is new at " + str(seconds_since_cache_update) + " seconds. Reading data from cache.
                 # This line should not print")
                 pass
-            print("Cached server call done.")
+            #print("Cached server call done.")
             return cached_data
         else:
             raise Exception(
@@ -130,7 +130,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                                       'parameters=' + parameters_str])
     data = snd.data
 
-    print("Server call done.")
+    #print("Server call done.")
 
     # checking if we got any data
     if len(data) == 0:

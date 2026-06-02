@@ -2,7 +2,7 @@
 
 # debug
 from .pv_forecaster import force_clear_fmi_cache
-from .pv_forecaster import get_clearsky_estimate_for_interval
+from .pv_forecaster import get_clearsky_forecast_for_interval
 # Forecast functions
 from .pv_forecaster import get_default_fmi_forecast
 from .pv_forecaster import get_fmi_forecast_at_interpolated_time
@@ -14,6 +14,7 @@ from .pv_forecaster import process_radiation_df
 from .pv_forecaster import set_angles
 from .pv_forecaster import set_cache
 from .pv_forecaster import set_default_air_temp
+from .pv_forecaster import set_relative_bifacial_backside_efficiency
 # clearsky system parameters
 from .pv_forecaster import set_default_albedo
 from .pv_forecaster import set_default_wind_speed
@@ -21,6 +22,7 @@ from .pv_forecaster import set_default_wind_speed
 from .pv_forecaster import set_extended_output
 from .pv_forecaster import set_location
 from .pv_forecaster import set_snow_sliding
+from .pv_forecaster import set_bifacial
 # optional system parameters
 from .pv_forecaster import set_module_elevation
 from .pv_forecaster import set_nominal_power_kw
@@ -33,6 +35,7 @@ __all__ = [
 
     # optional system parameters
     "set_module_elevation",
+    "set_relative_bifacial_backside_efficiency",
 
     # clearsky system parameters
     "set_default_albedo",
@@ -41,7 +44,7 @@ __all__ = [
 
     # forecast functions
     "get_default_fmi_forecast",
-    "get_clearsky_estimate_for_interval",
+    "get_clearsky_forecast_for_interval",
     "get_fmi_forecast_for_interval",
     "get_fmi_forecast_at_interpolated_time",
     "get_default_clearsky_forecast",
@@ -51,6 +54,7 @@ __all__ = [
     "set_extended_output",
     "set_cache",
     "set_snow_sliding",
+    "set_bifacial",
 
     # external usage
     "process_radiation_df",
