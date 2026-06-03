@@ -211,8 +211,6 @@ def set_snow_sliding(snow_on):
 
 
 
-
-
 def set_timezone(timezone_string):
     global timezone
 

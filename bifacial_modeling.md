@@ -35,15 +35,16 @@ data1 = pvfc.get_default_clearsky_forecast(5)
 ```
 
 The toggle set_bifacial will enable bifaciality modeling. Backside efficiency sets a multiplier for the radiation
-absorbed by the backside. This is typically less than 1.0(meaning less than 100%) because the wiring of individual
-solar cells on the panel has to fit somewhere, and with current tech, it goes on the backside.
+absorbed by the backside. This is typically between 0.7(70%) to 0.95(95%) because the wiring of individual
+solar cells on the panel has to fit somewhere, and with current tech, it goes on the "backside" of the
+PV cells. 
 
 ## How bifaciality changes the behavior of the model
 
 ```mermaid
 
 stateDiagram-v2 
-    
+    # normal model steps
     s1 : 1. Data input
     s2 : 2. POA transposition
     s3 : 3. Reflection estimation
@@ -51,13 +52,20 @@ stateDiagram-v2
     s5 : 5. Panel temperature modeling
     s6 : 6. System output modeling
     
+    # bifacial check
     a11 : Bifaciality check
+    
+    # inside bifacial box
     a2 : 2. POA transposition (frontside)
     b2: 2. POA transpositions (backside)
     a3 : 3. Reflection estimation (frontside)
     b3 : 3. Reflection estimation (backside)
+    #Merging both sides to single dataframe\nwith identical efficiency on both sides
+
+
+    df1 : Dataframe 1\nlower backside efficiency not accounted for
+    df2 : Dataframe 2\nlower backside efficiency accounted for
     
-    b33 : Merging both sides to single dataframe
     
 
     
@@ -74,32 +82,77 @@ stateDiagram-v2
     s5 --> s6
     
     state bm {
-        b2 --> b3 #: Reflections with opposing panel \n angles and backside radiation
-        a2 --> a3 #: Reflections with original panel \n angles and frontside radiation
+        b2 --> b3
+        a2 --> a3
         
-        a3 --> b33
-        b3 --> b33
+        a3 --> df1
+        b3 --> df1
+        b3 --> df2
+        a3 --> df2
+        
+        
+
     }
-    
-    b33 --> s5
+    df2 --> s6 
+    df1 --> s5
+    s5 --> df2 : Panel temperature
 
 ```
-The diagram above shows roughly how the bifacial model works. If bifaciality is toggled on, the system will
-calculate plane of array transpositions with the same DNI, DHI, GHI, wind and air temp for two panels, one with the
-original given panel angles, and the backside which obviously has the opposing panel angles.
+### Monofacial path:
+The diagram above shows roughly how the bifacial model works. If bifaciality is off, the data goes through the
+normal monofacial model chain.
 
-After reflective losses are calculated, the radiation absorbed by the both sides is merged into a single dataframe,
-which is then used to calculate the temperature and output with the same King and Huld models as if it was a 
-monofacial panel.
+### Bifacial path:
+If bifaciality is on, the system will split the processing first into two separate paths.
 
-## Possible issues
+#### POA transpositions and reflection estimation
+The first path focuses on the frontside of the system, this uses the user given panel angles and modeling works
+identically to the monofacial sections of the model chain. 
 
-Bifacial panels might heat up faster than monofacial panels due to
-lower backside efficiency.
+Second path does the same, just by using panel angles that
+are "reversed" so that we get a dataframe with reflection corrected(panel absorbed) radiation on the backside of the
+bifacial panel.
 
-Bifacial panels might stay cooler due to how much thinner they are.
+#### Merging the paths
 
-We have access to data from a vertical east-west bifacial system, and it is displaying some unexpected characteristics.
-Output during solar noon(Sun at south) should drop significantly since neither side will receive direct irradiance.
-This PV model shows this 90 degree AOI dip really well, but with the testing dataset, the dip is wider and deeper,
-perhaps suggesting worse shallow angle absorption or shading from the panel frame.
+The two paths merge after reflection estimation, creating two dataframes.
+
+**Dataframe 1** contains the columns from the frontside dataframe, but the poa_ref_cor column which contains the 
+panel absorbed radiation value, is the sum of poa_ref_cor for both front and backside. 
+
+**Dataframe 2** is as dataframe 1, but the poa_ref_cor is set to 
+`poa_ref_cor_frontside + poa_ref_cor_backside*relative_efficiency`.
+
+The need for the two dataframes is perhaps best understood via a hypothetical scenario where backside efficiency is unrealistically
+low at 10% of the frontside efficiency. Temperature for this low efficiency backside bifacial panel should be about
+the same(or actually even higher than the temperature of a high efficiency bifacial panel).
+But if we reduce the backside 
+radiation with the backside coefficient, we effectively reduce the radiation that the model uses for temperature
+calculations, resulting in underestimated panel temperatures. And this is why the Dataframe 1 is needed for temperature
+modeling.
+
+In reality, the difference between backside and frontside efficiency isn't this large, but we still want to use the full
+panel absorbed radiation for panel temperature calculations, and efficiency compensated radiation for system output
+modeling for more accurate results.
+
+#### Bifacial temperature calculation
+The bifacial panel temperature is calculated with the efficiency-not-accounted-for Dataframe1 using the same King 
+model as the monofacial pipeline, ensuring a more correct panel temperature.
+
+**Note:** Panel temperatures may still be underestimated. The lower efficiency means that more of the solar irradiance is
+transformed into heat instead of electricity. This is something we would like to model more accurately in the future.
+
+#### Bifacial output calculation
+
+The panel temperature calculated with the monofacial temperature model using Dataframe 1, is added to the efficiency
+compensated Dataframe 2, which is then used as the input for the Huld PV panel output model.
+
+## Issues
+
+* Reduced backside efficiency may lead to hotter panel temperatures.
+* Thinner construction may help the panels stay cooler.
+* Panel degradation may happen at faster or slower speed due to different construction.
+* Some of out testing data suggests that bifacial panels handle radiation coming from the
+sides(at +80 deg angle of incidence) worse than monofacial panels. This may require us to modify the reflection
+estimation or other parts of the model in order to compensate.
+
