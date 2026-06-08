@@ -63,4 +63,4 @@ __all__ = [
     "force_clear_fmi_cache"
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
