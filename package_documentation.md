@@ -87,7 +87,7 @@ pvfc.set_default_wind_speed(wind_ms)
 
 * degrees_C: Air temperature in Celsius. Overridden by "T" column in dataframe if column exists. Default is 20 degrees.
 * albedo: Ground reflectivity in range [0,1]. Use 0.15 for dark ground, 0.6 for snow. Overridden by "albedo"
-  column in dataframe if column exists. Default is 0.25.
+  column in dataframe if column exists. Default is 0.15.
 * wind_ms: Wind speed in meters per second. Overridden by "wind" column in dataframe if column exists.
   Default value is 2.
 

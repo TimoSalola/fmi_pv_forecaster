@@ -130,7 +130,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                                       'parameters=' + parameters_str])
     data = snd.data
 
-    print("Server call done.")
+    #print("Server call done.")
 
     # checking if we got any data
     if len(data) == 0:
@@ -144,7 +144,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                         + collection_string
                         )
 
-    print("Got " + str(len(data))+ " values as forecast.")
+    #print("Got " + str(len(data))+ " values as forecast.")
 
     #print("data type:")
     # print(type(data)) # should be dict
@@ -160,7 +160,8 @@ def collect_fmi_opendata(latitude: float, longitude: float,
         #print(type(values)) # another dict
         #print(values.keys()) # getting dict_keys([None, 'Global radiation accumulation', 'Short wave radiation accumulation'])
 
-        # throwing an error if server is not retunrning all expected values.
+        # throwing an error if server is not returning all expected values. This can happen during high server load times
+        # Also should warn if API has changed and we aren't getting the required parameters anymore.
         if len(values.keys()) < 6:
             missing_values = []
             received_values = values.keys()
