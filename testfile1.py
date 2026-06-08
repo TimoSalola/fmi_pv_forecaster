@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 import fmi_pv_forecaster as pvfc
 
 
-pvfc.set_location(54.103,18.024)
+pvfc.set_location(60,25)
 
 pvfc.set_angles(35, 180)
 
