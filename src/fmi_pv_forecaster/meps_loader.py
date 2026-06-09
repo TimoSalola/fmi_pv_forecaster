@@ -141,7 +141,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                         "forecast interval end "
                         + str((datetime.now(timezone.utc) + timedelta(hours=66)).strftime("%Y-%m-%d %H:%M"))
                         + "Collection string:"
-                        + collection_string
+                        + collection_string + " Other errors are also possible."
                         )
 
     #print("Got " + str(len(data))+ " values as forecast.")
