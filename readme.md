@@ -1,7 +1,7 @@
 
 # FMI open pv forecast package
 
-Version 0.1.1
+Version: 0.1.1 - Licence: GLP 3.0
 
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
 weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for
@@ -192,6 +192,6 @@ Timo Salola.
 
 Additional help from: Viivi Kallio, William Wandji, Anders Lindfors, Juha Karhu.
 
-This project uses PVlib.
+This package relies on Pandas, Numpy, PVlib and fmiopendata.
 
 <img src="readme_images/pvlib_logo.webp" height="100"/>

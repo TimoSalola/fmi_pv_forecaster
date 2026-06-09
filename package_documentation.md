@@ -112,7 +112,8 @@ Setting bifaciality on will simulate radiation on both sides of the PV panel, wi
 of 1.0 or whatever the user has given with: `pvfc.set_relative_bifacial_backside_efficiency(value)`
 
 Once radiation absorbed by the panel from the both sides is calculated, the two dataframes are merged so that the
-same monofacial temperature and power output estimation models can be used.
+same monofacial temperature and power output estimation models can be used. See [bifacial modeling](bifacial_modeling.md)
+for additional information.
 
 
 # 2. Forecasting functions
