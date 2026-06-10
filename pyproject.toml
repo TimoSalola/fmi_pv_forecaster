@@ -7,7 +7,7 @@ name = "fmi-pv-forecast"
 version = "0.1.1"
 description = "Forecasting tools for FMI PV data"
 authors = [
-    { name = "Timo Salola", email = "you@example.com" }
+    { name = "Timo Salola", email = "timo.salola@fmi.fi" }
 ]
 readme = "README.md"
 license = { text = "GPL-3.0-or-later" }
