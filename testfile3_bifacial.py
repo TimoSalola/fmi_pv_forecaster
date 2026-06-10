@@ -10,7 +10,7 @@ The test consists of feeding the system parameters such as geolocation and panel
 true. This should result in the package generating a multi part figure with both sides and the combined system output
 as curves.
 
-For future reference, https://www.pvsyst.com/help-pvsyst7/bifacial_systems.htm 
+For future reference, https://www.pvsyst.com/help-pvsyst7/bifacial_systems.htm
 seems like a good source on bifaciality modeling.
 """
 
@@ -18,6 +18,7 @@ latitude = 64
 longitude = 25
 tilt1 = 45
 azimuth1 = 90
+
 
 def print_full(x: pd.DataFrame):
     """
@@ -73,7 +74,7 @@ ax12 = ax[3,2]
 
 #print(data1)
 
-### col 1
+# col 1
 ax4.set_title('Output')
 ax4.plot(data1.index, data1["poa_ref_cor_front"], label="Frontside absorbed radiation")
 ax4.plot(data1.index, data1["poa_ref_cor_back"], label="Backside absorbed radiation")
@@ -81,7 +82,7 @@ ax4.plot(data1.index, data1["output"], label="Total output")
 ax4.legend()
 
 
-## col 2
+# col 2
 
 ax5.set_title('Panel frontside radiation values' + " t: " + str(tilt1) + " a: " + str(azimuth1))
 ax5.plot(data1.index, data1["dni"], label="dni")
@@ -103,9 +104,9 @@ ax7.legend()
 ax8.plot(data1.index, data1["poa_ref_cor_front"], label="Frontside absorbed radiation")
 ax8.legend()
 
-#### col 3
+# col 3
 
-ax9.set_title('Panel backside radiation values, t: ' + str(180-tilt1) + " a: " + str((azimuth1 +180) %360))
+ax9.set_title('Panel backside radiation values, t: ' + str(180 - tilt1) + " a: " + str((azimuth1 + 180) % 360))
 ax9.plot(data1.index, data1["dni"], label="dni")
 ax9.plot(data1.index, data1["dni_poa_back"], label="back dni_poa")
 ax9.plot(data1.index, data1["dni_rc_back"], label="back dni_rc")
@@ -127,10 +128,4 @@ ax12.plot(data1.index, data1["poa_ref_cor_back"], label="Backside absorbed radia
 ax12.legend()
 
 
-
-
 plt.show()
-
-
-
-

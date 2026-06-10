@@ -179,7 +179,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
                     missing_values.append(e_val)
 
             raise ValueError("FMI open data server did not return all of the expected values, missing values were:"
-                             +str(missing_values) + " got the following values: " + str(received_values)+ "."
+                             + str(missing_values) + " got the following values: " + str(received_values) + "."
                              " If https://opendata.fmi.fi/ returns a high-load page, the issue could be server load"
                             "related. If not and the issue persists, API might have changed. This would require"
                             " fixes to the forecasting package.")

@@ -8,7 +8,7 @@ test_count = 300
 
 def test_dni_reflections():
 
-    for i in range (test_count):
+    for i in range(test_count):
 
 
         latitude = random.uniform(-90,90)
@@ -119,4 +119,3 @@ def test_ghi_reflections():
     )
 
     print("Ran tests on ghi reflections. Did not find obvious issues.")
-

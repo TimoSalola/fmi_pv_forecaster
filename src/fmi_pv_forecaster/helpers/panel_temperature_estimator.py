@@ -37,7 +37,7 @@ def add_estimated_panel_temperature(df: pandas.DataFrame) -> pandas.DataFrame:
     if "poa_ref_cor" not in df.columns:
         raise ValueError("Error attempting to calculate panel temperature, dataframe did not contain column 'poa_ref_cor'"
                          "This column is supposed to contain the amount of radiation per m2 that the panels are absorbing."
-                         "Panel temperature can't be calculated without it." )
+                         "Panel temperature can't be calculated without it.")
 
     def helper_add_panel_temp(df):
         estimated_temp = temperature_of_module(df["poa_ref_cor"], df["wind"], default_parameters.panel_elevation,

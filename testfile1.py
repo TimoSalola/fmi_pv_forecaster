@@ -31,7 +31,7 @@ plt.plot(data.index, data["output"], label="Forecast", color="#303193")
 plt.plot(dataB.index, dataB["output"], label="Forecast 15min interpolated", color="skyblue")
 #plt.plot(data2.index, data2["output"], label="Cloud free forecast",  color="#6ec8fa")
 #plt.plot(data3.index, data3["output"], label="Cloud free forecast 15min",  color="red")
-plt.plot(data4.index, data4["output"], label="Cloud free forecast 1min",  color="black")
+plt.plot(data4.index, data4["output"], label="Cloud free forecast 1min", color="black")
 
 
 # adding axis labels, titles and other text elements
@@ -46,4 +46,3 @@ plt.legend(loc='upper right')
 
 # showing plot
 plt.show()
-

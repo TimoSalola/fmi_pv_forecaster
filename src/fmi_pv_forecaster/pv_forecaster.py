@@ -190,13 +190,16 @@ def set_cache(cache_on):
 
     meps_loader.cache_enabled = cache_on
 
+
 def set_bifacial(bifacial_on):
     global bifacial
     bifacial = bifacial_on
 
+
 def set_relative_bifacial_backside_efficiency(bs_efficiency):
     global relative_bifacial_backside_efficiency
     relative_bifacial_backside_efficiency = bs_efficiency
+
 
 def set_snow_sliding(snow_on):
     """
@@ -335,7 +338,7 @@ def process_radiation_df(data):
         Marion model:
         T_ambient > Gpoa/-80
         """
-        data["degrees above snowsliding"] = data["T"]+data["poa"]/80
+        data["degrees above snowsliding"] = data["T"] + data["poa"] / 80
 
     # step 6. estimate power output
     data = output_estimator.add_output_to_df(data)
@@ -348,6 +351,7 @@ def process_radiation_df(data):
             return data[["T", "wind", "module_temp", "output"]]
 
     return data
+
 
 def process_radiation_df_bifacial(data_in):
     """
@@ -396,7 +400,7 @@ def process_radiation_df_bifacial(data_in):
 
     # panel back surface, requires recomputation of panel angles
     azimuth_b = (panel_azimuth + 180) % 360
-    tilt_b = 180-panel_tilt
+    tilt_b = 180 - panel_tilt
 
     #print("azimuth_b: " + str(azimuth_b))
     #print("tilt_b: " + str(tilt_b))
@@ -463,7 +467,7 @@ def process_radiation_df_bifacial(data_in):
     # Rewriting the total absorbed radiation using backsíde efficiency as a backside multiplier.
     # This may appear odd, but I'm making the assumption that backside efficiency doesn't matter when it comes to
     # temperatures, but it does matter for output estimation.
-    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"]*backside_efficiency
+    output["poa_ref_cor"] = output["poa_ref_cor_front"] + output["poa_ref_cor_back"] * backside_efficiency
 
     # step 6. estimate power output
     output = output_estimator.add_output_to_df(output)
@@ -475,6 +479,7 @@ def process_radiation_df_bifacial(data_in):
 
     #print("output was extended, returning all values")
     return output
+
 
 """
 Flexible forecast functions with custom intervals:

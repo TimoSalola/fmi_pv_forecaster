@@ -3,6 +3,7 @@ import random
 import fmi_pv_forecaster as pvfc
 import pandas as pd
 
+
 def random_int(a, b):
     # helper, generates ints for some functions
     return random.randint(a, b)
@@ -12,6 +13,7 @@ def random_float(a, b):
     # helper, generates floats for some functions. 6 decimal values can do geolocation at 1m accuracy so 6 should be
     # enough for testing purposes. Also keeps prints neater.
     return round(random.uniform(a, b), 6)
+
 
 def print_full(x: pd.DataFrame):
     """
@@ -29,6 +31,7 @@ def print_full(x: pd.DataFrame):
     pd.reset_option('display.width')
     pd.reset_option('display.float_format')
     pd.reset_option('display.max_colwidth')
+
 
 def test_clearsky_forecast_default_range():
     print("====================================================")
