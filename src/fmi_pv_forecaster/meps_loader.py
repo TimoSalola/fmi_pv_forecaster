@@ -233,7 +233,7 @@ def collect_fmi_opendata(latitude: float, longitude: float,
     df["sza"] = get_solar_azimuth_zenit_fast(df.index, latitude, longitude)[1]
     # solar zenit angle added
 
-    # Calculate dni from dhi
+    # Calculate dni from direct irradiance and sun angle
     df['DNI'] = df['DirHI'] / np.cos(df['sza'] * (np.pi / 180))
 
     # Keep the necessary parameters
