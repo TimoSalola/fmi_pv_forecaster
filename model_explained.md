@@ -703,7 +703,6 @@ stateDiagram-v2
     rated_power --> output_model
     
     output_model --> output_power
-
 ```
 
 The way the Huld model works is that it computes `efficiency` based on panel temperature and absorbed radiation

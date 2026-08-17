@@ -9,6 +9,8 @@ pvfc.set_location(60,25)
 
 pvfc.set_angles(35, 180)
 
+pvfc.set_extended_output(True)
+
 data = pvfc.get_default_fmi_forecast()
 dataB = pvfc.get_default_fmi_forecast(interpolate="15min")
 
@@ -17,7 +19,10 @@ data3 = pvfc.get_default_clearsky_forecast(timestep=15)
 data4 = pvfc.get_default_clearsky_forecast(timestep=1)
 
 
-#print(data)
+pvfc.set_location()
+
+print(data)
+print(data.columns)
 #print(type(data))
 
 #print(data2)

@@ -64,9 +64,9 @@ Parameter setting functions begin here, some mandatory, some optional.
 def set_location(latitude, longitude):
     """
     Call this function to set the PV site latitude and longitude. Values outside metcoop forecast region will cause
-    issues with FMI forecast retrieval.
-    :param latitude: WGS84 as float. Valid values are -90 to 90.
-    :param longitude: WGS84 in float format. eq 60.4312. Valid values are -180 to 180.
+    issues with FMI forecast retrieval, but they will work with your own data and clearsky forecasts.
+    :param latitude: WGS84 latitude as float. Valid values are -90 to 90.
+    :param longitude: WGS84 longitude in float format. eq 60.4312. Valid values are -180 to 180.
     """
 
     global site_latitude
@@ -84,9 +84,14 @@ def set_location(latitude, longitude):
 
 def force_clear_fmi_cache():
     """
-    This function will force clearing of FMI open data cache. Cache clearing should normally happen automatically when
-    geolocation has been changed or when cache is old and so this function should be useless. Leaving it in for
-    debugging.
+    This package keeps a single FMI weather forecasts in memory in order to limit the amount of server calls.
+    This function removes the forecast from memory. Calling any of the .get_fmi_XXX functions after clearing
+    cache will request a new forecast and store it in cache.
+
+    Cache will also be cleared if geolocation of the installation is changed. This is done because forecasts retrieved
+    from FMI are only for a single point.
+
+    This function was originally made to test if caching works, but I'm leaving it in for experimentation.
     """
 
     meps_loader.clear_cache()
@@ -120,9 +125,10 @@ def set_extended_output(extended: bool):
 
 def set_nominal_power_kw(nominal_power: float):
     """
-    This function sets the power rating of the PV system.
-    :param nominal_power: Advertised power output of the PV system in standard conditions
-    (perfect weather, direct sunlight)
+    This function sets the power rating of the PV system. Value can be int/float, and it will be used to scale the simulated
+    system output. Use a value that matches the power rating of the PV installation.
+
+    :param nominal_power: Advertised power output of the PV system in standard conditions (perfect weather, direct sunlight)
     :return: None
     """
     global power_rating
@@ -143,8 +149,8 @@ def set_default_air_temp(air_temp_c: float):
 
 def set_default_wind_speed(wind_speed_ms: float):
     """
-    This function will set the wind speed(in meters per second at 2m above ground) used by clearsky PV forecasts.
-    FMI forecasts do not use the default value as wind speed at 2m is given by the forecast API.
+    This function will set the wind speed(in meters per second at 10m above ground) used by clearsky PV forecasts.
+    FMI forecasts do not use the default value as wind speed at 10m is given by the forecast API.
     Wind transfers heat away from PV panels and decreases the difference between air temperature and panel temperature.
     """
     fmi_pv_forecaster.helpers.default_parameters.wind_speed = wind_speed_ms
@@ -155,17 +161,17 @@ def set_default_wind_speed(wind_speed_ms: float):
 def set_module_elevation(module_elevation_m: float):
     """
     This function will set the physical module elevation(measured from ground, not sea level). Module elevation and
-    wind speed at 2m are used together to estimate the wind at panel elevation.
+    wind speed at 10m are used together to estimate the wind at panel elevation.
 
-    Higher than actual elevation can be used to compensate for exposed panels and
-    lower than actual for sheltered panels.
+    Higher than actual elevation can be used to compensate for really windy locations and exposed panels. Lower for
+    sheltered panels.
 
     If you are processing external data with wind measured at panel elevation, use measured wind as wind value and
-    set module elevation as 2m. This way exact wind speed measurements will be used.
+    set module elevation as 10m. This way exact wind speed measurements will be used.
     """
 
     fmi_pv_forecaster.helpers.default_parameters.panel_elevation = module_elevation_m
-    # print("Module elevation set at: " + str(fmi_pv_forecast.helpers.default_parameters.panel_elevation) + "m")
+
 
 
 def set_default_albedo(albedo: float):
@@ -182,7 +188,8 @@ def set_cache(cache_on):
     Cache is on by default and this package was built with the intention of having cache always on.
 
     Disabling cache will cause every function with FMI in its name to make a new server query to
-    FMI servers. This will result in unnecessary server calls.
+    FMI servers. This will result in unnecessary server calls and server may even refuse calls if load from your IP
+    is too high.
 
     Having cache on will only make new server calls if data isn't cached yet, caching was done
     over a minute ago, geolocation was changed or cache was manually purged.
@@ -191,20 +198,48 @@ def set_cache(cache_on):
     meps_loader.cache_enabled = cache_on
 
 def set_bifacial(bifacial_on):
+    """
+    Bifaciality toggle, turning this on will estimate the PV output for a bifacial panel where front surface
+    orientation matches the given panel angles.
+
+    Current model is fairly simple, temperatures and efficiency might be off. Set a custom backside efficiency with
+    .set_relative_bifacial_backside_efficiency()
+
+    :param bifacial_on: Boolean value, True for on, False for off
+    :return:
+    """
     global bifacial
     bifacial = bifacial_on
 
 def set_relative_bifacial_backside_efficiency(bs_efficiency):
+    """
+    Bifacial panels have wirings/logic on the backaside and thus backside is often a couple of percents worse at
+    generating power than frontside. This varies between panels. This function can be used to set custom multipliers.
+
+
+    :param bs_efficiency: Float in range of [0.7, 0.9] would be typical. 1.0 can be used for testing purposes.
+    :return:
+    """
+
     global relative_bifacial_backside_efficiency
     relative_bifacial_backside_efficiency = bs_efficiency
 
 def set_snow_sliding(snow_on):
     """
-    This is a toggle for turning snow sliding on and off.
-    Adds column "snow sliding" to output dataframe. Value in column is in celcius. If value is positive, snow sliding
-    is likely to occur due to melting snow. If negative, snow sliding is unlikely.
+    Turning snow sliding on will add column "snow sliding" into the model. This column represents the snow temperature.
+
+
+
+    This is a toggle for turning snow sliding modeling on and off. Calculations are based on the Marion model
+    and research on how well this works is currently ongoing.
+
+    When on, this adds column "snow sliding" to output dataframe. Value in column is in celcius.
+    If value is positive, snow sliding is likely to occur due to melting snow. If negative, snow sliding is unlikely.
 
     The further the value is from zero, the stronger the effect is.
+
+    Each positive degree in the snow sliding column means that air is one degree warmer than it would have to be for
+    snow to melt.
     """
     global snow_slide_modeling
     snow_slide_modeling = snow_on
@@ -252,24 +287,6 @@ def __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep
     return clearsky_estimate
 
 
-def __get_fmi_forecast_for_interval(interval_start, interval_end):
-    """
-    Main function for getting FMI open data -radiation values.
-    :param interval_start:
-    :param interval_end:
-    :return:
-    """
-
-    if site_latitude is None or site_longitude is None:
-        raise ValueError(
-            "Latitude and longitude must be defined before calling forecast -functions."
-            " Call pv_forecast.set_location(latitude, longitude) first with valid WGS84 coordinates."
-        )
-
-    data = meps_loader.collect_fmi_opendata(site_latitude, site_longitude, interval_start, interval_end)
-
-    return data
-
 
 """
 Internal helper functions  end here.
@@ -285,10 +302,18 @@ def process_radiation_df(data):
 
     The input df must have columns:
     'time', 'dni', 'dhi', 'ghi'
-    additional columns "T", "wind" and "albedo" are also useful
+    additional columns "T", "wind" and "albedo" are also useful. Those contain the ambient air temperature, wind speed
+    and ground reflectivity. If not included in the dataframe, defaults from the package are used. Those defaults can
+    be adjusted with .set_default_xxx -functions.
 
-    time column is the mathematical point for which each row in the data is simulated for.
-    Since weather at 18:00 represents weather between 17:00 and 18:00, the time column is often index-30min
+    time column is the exact mathematical point for which each row in the data is simulated for. So if this is wrong,
+    sun position will be wrong, and you will get wrong results.
+
+    Since weather at 18:00 can represent the exact weather at 18:00, or the average of 17:00 to 18:00. You need to
+    figure out how times are indexed in your dataset.
+
+    With FMI radiation data, timestamp 18:00 represent time interval of 17:00 to 18:00, which is why a 30-minute time
+    shift is needed.
     """
 
     #print("bifacial check")
@@ -482,6 +507,32 @@ Flexible forecast functions with custom intervals:
 
 
 def get_clearsky_forecast_for_interval(interval_start, interval_end, timestep=60):
+    """
+    Returns an optimistic weather-unaware PV production for selected time interval using selected timestep.
+    This clearsky forecast uses constant or given air temp, wind speed and albedo values. Set them with
+    .set_default_air_temp, .set_default_albedo, .set_default_wind_speed
+
+    :param interval_start: Datetime with year, month, day, hour. Minute and second will be ignored and set to zero.
+    :param interval_end:  Datetime with year, month, day, hour. Minute and second will be ignored and set to zero.
+    :param timestep: Minutes between rows in forecast. Only tested with integers.
+    :return: DF with columns: datetime index, T, wind, module_temp, output. T is ambient air temperature in C. wind is
+    wind speed in m/s.
+
+    Example: interval_start = datetime(2026-08-17 13:20), interval_end = datetime(2026-08-17 13:20), timestep = 10
+    Output:
+                                T  wind  module_temp       output
+    2026-08-17 13:00:00+00:00  20     2    39.187484  2581.720278
+    2026-08-17 13:10:00+00:00  20     2    38.527107  2499.579738
+    2026-08-17 13:20:00+00:00  20     2    37.833034  2412.422395
+    2026-08-17 13:30:00+00:00  20     2    37.106726  2320.309278
+    ...
+    2026-08-18 12:50:00+00:00  20     2    39.691894  2643.946165
+    2026-08-18 13:00:00+00:00  20     2    39.064610  2566.494637
+
+    """
+
+
+
     if site_latitude is None or site_longitude is None:
         raise ValueError(
             "Latitude and longitude must be defined before PV output is estimated."
@@ -500,6 +551,9 @@ def get_clearsky_forecast_for_interval(interval_start, interval_end, timestep=60
     interval_start = datetime.datetime(year=interval_start.year, month=interval_start.month, day=interval_start.day,
                                        hour=interval_start.hour, minute=0)
 
+    interval_end = datetime.datetime(year=interval_end.year, month=interval_end.month, day=interval_end.day,
+                                       hour=interval_end.hour, minute=0)
+
     # step 1. getting clearsky radiation
     data = __get_clearsky_radiation_for_interval(interval_start, interval_end, timestep)
 
@@ -515,8 +569,8 @@ def get_fmi_forecast_for_interval(interval_start, interval_end):
 
     Uses cache so if this or any other fmi function has been recently called, no additional server calls will be made.
 
-    :param interval_start: Start time for subsection
-    :param interval_end:  End time for subsection
+    :param interval_start: Datetime, Start time for subsection
+    :param interval_end: Datetime, End time for subsection
     :return:
     """
     default_fmi_forecast = get_default_fmi_forecast()
@@ -554,7 +608,7 @@ def __get_fmi_forecast_rad_data():
             " valid 0-90, 0-360 degree panel angles."
         )
 
-    data = __get_fmi_forecast_for_interval(interval_start, interval_end)
+    data = get_fmi_forecast_for_interval(interval_start, interval_end)
 
     return data
 
@@ -563,14 +617,16 @@ def get_default_fmi_forecast(interpolate=False):
     """
     This function returns the whole 66~ish hour FMI forecast available at this moment in time.
     Timestamps in the forecast are every 60 minutes with a 30min offset. 12:30, 13:30 and so on, using UTC time.
-    :param interpolate: Default false will skip interpolation. String "15min" will result in interpolated forecasts
-    where power values are at 12:00, 12:15, 12:30...
+    :param interpolate: Default false will skip interpolation. Interpolate = "15min" will result in interpolated
+    forecasts where power values are at 12:00, 12:15, 12:30...
 
-    Interpolation works nicely with values which divide 60 into integers. 30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1
+    Interpolation works nicely with values which divide 60 into integers.
+    30, 20, 15, 12, 10, 6, 5, 4, 3, 2, 1.
+
     :return:
     """
 
-    # getting the hourly 66 hour forecast
+    # getting the hourly 66-hour forecast
     data = __get_fmi_forecast_rad_data()
 
     # if interpolation is left False, interpolation will not be done
@@ -629,6 +685,11 @@ def get_default_clearsky_forecast(timestep=60):
 
     Forecast will have 60 minute time resolution, 70 hours of measurements and first measurement will be at xx:00 where
     xx is current hour.
+
+    This clearsky forecast relies on default wind speed, air temperature and albedo built into the package. Adjust them
+    with functions .set_default_air_temp, .set_default_albedo, .set_default_wind_speed
+
+    :param timestep: Timestep in minutes between rows of the forecast. Default is 60.
     """
 
     time_start = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=3)
@@ -665,6 +726,22 @@ def get_fmi_forecast_now():
 
 
 def get_fmi_forecast_at_interpolated_time(given_time):
+    """
+    This is a somewhat odd function. It will return the FMI weather forecast based PV forecast at the given time as
+    long as the time is within the forecast window.
+
+    So if you want to get the PV power today at this very second(12:43:33 for example), then this is the function to use.
+    As the package uses cached FMI forecasts, you could call this function in a loop a thousand times if you really
+    wanted to, without that resulting in any additional network traffic.
+
+    Note that since this uses linear interpolation, outputs are just approximations of likely current output.
+
+
+    :param given_time: datetime with seconds. Has to be within the approximate interval of [now, now+60hours]
+    :return:
+    """
+
+
     fmi_power_forecast = get_default_fmi_forecast()
     return __interpolate_nearest_power_to_time_value(fmi_power_forecast, given_time)
 
@@ -772,7 +849,11 @@ def add_local_time_column(df):
 
 def get_fmi_radiation_forecast():
     """
-    This is a helper function for getting radiation data from FMI.
+    This function doesn't return a PV forecast, but rather the radiation and weather forecast that the PV forecast
+    is based on.
+
+    If you want to examine radiation forecasts or modify them in some way, you could call this function and
+    .process_radiation_df(df) with the output of this function as an input.
     :return:
     """
     interval_start = datetime.datetime.now(datetime.timezone.utc).replace(tzinfo=None) - datetime.timedelta(hours=6)
@@ -790,6 +871,6 @@ def get_fmi_radiation_forecast():
         )
 
 
-    data = __get_fmi_forecast_for_interval(interval_start, interval_end)
+    data = get_fmi_forecast_for_interval(interval_start, interval_end)
 
     return data
