@@ -19,7 +19,6 @@ data3 = pvfc.get_default_clearsky_forecast(timestep=15)
 data4 = pvfc.get_default_clearsky_forecast(timestep=1)
 
 
-pvfc.set_location()
 
 print(data)
 print(data.columns)

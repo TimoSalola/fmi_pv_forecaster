@@ -745,10 +745,7 @@ def get_fmi_radiation_forecast():
 
 
 
-set_location(60, 24)
-set_angles(15, 135)
-
-data = get_default_fmi_forecast()
-
-
-print_full(data)
+#set_location(60, 24)
+#set_angles(15, 135)
+#data = get_default_fmi_forecast()
+#print_full(data)
