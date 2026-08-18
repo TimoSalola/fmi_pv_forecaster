@@ -46,7 +46,7 @@ def test_power_output_estimation_function():
         assert estimated_output1 >= 0, (
             "Estimated power output was negative, this should never happen."
         )
-        assert estimated_output1 < absorbed_radiation*kwh_rating1 * 1.01, (
+        assert estimated_output1 < absorbed_radiation * kwh_rating1 * 1.01, (
             # including a 1% margin due to floating point errors.
             "Estimated power was greater than absorbed radiation, this should never happen.",
             str(estimated_output1) + " < " + str(absorbed_radiation * kwh_rating1)
@@ -54,11 +54,11 @@ def test_power_output_estimation_function():
 
         # power rating values should be just simple multipliers, this bit tests if both estimated power values are
         # within a 2% range when scaling is reversed
-        assert estimated_output1/kwh_rating1 >= (estimated_output2 / kwh_rating2) * 0.98, (
+        assert estimated_output1 / kwh_rating1 >= (estimated_output2 / kwh_rating2) * 0.98, (
             "Nominal system power scaling does not appear to be linear."
         )
 
-        assert estimated_output1/kwh_rating1 <= (estimated_output2 / kwh_rating2) * 1.02, (
+        assert estimated_output1 / kwh_rating1 <= (estimated_output2 / kwh_rating2) * 1.02, (
             "Nominal system power scaling does not appear to be linear."
         )
 

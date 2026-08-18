@@ -132,6 +132,7 @@ def test_dhi_transposition_tilt0():
 
     print("Tested " + str(test_count) + " random dhi transpositions with fixed tilt. No faults found.")
 
+
 def test_dhi_transposition_random_panel_angles():
     """
     This function tests dhi transpositions, proper testing is unfortunately difficult so this just checks physical
@@ -238,7 +239,7 @@ def test_dni_transposition():
         )
 
         assert transposed_dni <= dni, (
-            "Transposed DNI(" +str(transposed_dni) + ") was higher than DNI(" + str(dni) + ")"
+            "Transposed DNI(" + str(transposed_dni) + ") was higher than DNI(" + str(dni) + ")"
 
         )
 
