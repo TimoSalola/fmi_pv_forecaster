@@ -245,6 +245,8 @@ def set_relative_bifacial_backside_efficiency(bs_efficiency):
     Bifacial panels have wirings/logic on the backside and thus backside is often a couple of percents worse at
     generating power than the frontside. This varies between panels. This function can be used to set custom multipliers.
 
+    Default value is 1.0.
+
 
     :param bs_efficiency: Float in range of [0.7, 0.9] would be typical. 1.0 can be used for testing purposes.
     :return:

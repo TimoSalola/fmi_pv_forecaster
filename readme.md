@@ -1,7 +1,7 @@
 
 # FMI open pv forecast package
 
-Version: 0.1.1 - Licence: GPL 3.0
+Version: 0.1.2 - Licence: MIT
 
 The main functionality of this package is the PV forecasting tool which is a combination of the FMI PV model and
 weather forecasts from FMI open data. The resulting PV forecasting tool generates hourly weather-aware PV forecasts for
@@ -21,8 +21,6 @@ See [Examples](examples.md) for examples on how to use the package.
 And [Package documentation](package_documentation.md) for a programmer-oriented description of functions built
 into the package.
 
-Bifacial modeling is new in 0.1.1, see [Bifacial modeling](bifacial_modeling.md) for additional information.
-
 ## **Table of contents:**
 
 <!-- TOC -->
@@ -36,20 +34,21 @@ Bifacial modeling is new in 0.1.1, see [Bifacial modeling](bifacial_modeling.md)
   * [Forecast accuracy](#forecast-accuracy)
 * [Usage of external data instead of FMI open data](#usage-of-external-data-instead-of-fmi-open-data)
 * [Usage example](#usage-example)
-      * [Authors and acknowledgements](#authors-and-acknowledgements)
+ * [Authors and acknowledgements](#authors-and-acknowledgements)
 <!-- TOC -->
 
 ## Installing the package
 
 As of mid 2026, the package is still in development phase. If you would like to try it out, download
-`fmi_pv_forecast-0.1.1-py3-none-any.whl` from the dist/ folder and install it into your
+`fmi_pv_forecast-0.1.2-py3-none-any.whl` from the dist/ folder and install it into your
 python environment. This can be done with the command
-`pip install --force-reinstall wheel fmi_pv_forecast-0.1.1-py3-none-any.whl`
+`pip install --force-reinstall wheel fmi_pv_forecast-0.1.2-py3-none-any.whl`
 After package is installed, it can be imported as shown in the examples.
 ---
 
 ## Version history:
 
+- 0.1.2 (2026-08-18) License switched from GPL 3.0 to MIT. 
 - 0.1.1 (2026-06-02) Added bifaciality and Marion -based snow sliding.
 - 0.1.0 Initial PV Model with monofacial modeling features.
 
