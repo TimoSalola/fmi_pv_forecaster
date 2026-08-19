@@ -1,5 +1,6 @@
 import datetime
 
+import pandas as pd
 from matplotlib import pyplot as plt
 
 import fmi_pv_forecaster as pvfc
@@ -11,8 +12,37 @@ pvfc.set_angles(35, 180)
 
 pvfc.set_extended_output(True)
 
+pvfc.set_extended_output(True)
+
+pvfc.set_snow_sliding(True)
+
 data = pvfc.get_default_fmi_forecast()
 dataB = pvfc.get_default_fmi_forecast(interpolate="15min")
+
+print(type(data.index[0]))
+
+
+def print_full(x: pd.DataFrame):
+    """
+    Prints a dataframe without leaving any columns or rows out. Useful for debugging.
+    """
+
+    pd.set_option('display.max_rows', None)
+    pd.set_option('display.max_columns', None)
+    pd.set_option('display.width', 1400)
+    pd.set_option('display.float_format', '{:10,.2f}'.format)
+    pd.set_option('display.max_colwidth', None)
+    print(x)
+    pd.reset_option('display.max_rows')
+    pd.reset_option('display.max_columns')
+    pd.reset_option('display.width')
+    pd.reset_option('display.float_format')
+    pd.reset_option('display.max_colwidth')
+
+
+
+print_full(data)
+
 
 data2 = pvfc.get_default_clearsky_forecast()
 data3 = pvfc.get_default_clearsky_forecast(timestep=15)
