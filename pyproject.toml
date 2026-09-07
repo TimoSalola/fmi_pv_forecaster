@@ -5,11 +5,11 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "fmi-pv-forecast"
 version = "0.1.2"
-description = "Tool for weather aware PV forecasting using forecasts from FMI."
+description = "Forecasting tools for FMI PV data"
 authors = [
     { name = "Timo Salola", email = "timo.salola@fmi.fi" }
 ]
-readme = "README.md"
+readme = "readme.md"
 license = "MIT"
 license-files = ["licenses/*"]
 requires-python = ">=3.10"
