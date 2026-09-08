@@ -101,7 +101,7 @@ def collect_fmi_opendata(latitude: float, longitude: float) -> pd.DataFrame:
     url_part2 = "&latlon="+str(latitude)+","+str(longitude)
 
     # part 3 contains time interval, going with a minimal date since this seems to work
-    url_part3 = "&starttime=" + "-5h"
+    url_part3 = "&starttime=" + "-6h" + "&endtime=" + str(datetime.now() + timedelta(hours=63))
 
     # url part 4 consists of parameters
     parameters = ["Temperature", "WindSpeedMS", "TotalCloudCover", "RadiationGlobalAccumulation",
@@ -288,5 +288,7 @@ def __get_irradiance_pvlib(latitude, longitude, date_start: datetime, date_end: 
 
 
 df = collect_fmi_opendata(60.43, 24.043)
+
+
 
 print_full(df)
