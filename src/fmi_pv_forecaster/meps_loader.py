@@ -226,9 +226,10 @@ def main_xml_to_df(xml_string):
     df_out["albedo"] = df["albedo"]
     df_out.index.name = "Time"
 
-    df_out["dni"].floor(0)
-    df_out["dhi"].floor(0)
-    df_out["ghi"].floor(0)
+    # restricting values to zero
+    clip_columns = ["dni", "dhi", "ghi"]
+    df_out[clip_columns] = df_out[clip_columns].clip(lower=0.0)
+    df_out.replace(-0.0, 0.0, inplace=True)
 
     # export df should now have all needed variables
     return df_out
