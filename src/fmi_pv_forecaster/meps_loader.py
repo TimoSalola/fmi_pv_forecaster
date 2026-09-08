@@ -226,6 +226,10 @@ def main_xml_to_df(xml_string):
     df_out["albedo"] = df["albedo"]
     df_out.index.name = "Time"
 
+    df_out["dni"].floor(0)
+    df_out["dhi"].floor(0)
+    df_out["ghi"].floor(0)
+
     # export df should now have all needed variables
     return df_out
 
