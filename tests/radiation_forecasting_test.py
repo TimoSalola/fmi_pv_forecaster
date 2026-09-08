@@ -142,7 +142,7 @@ def test_values_are_reasonable():
 
     """
                               dni         dhi         ghi    albedo    T  wind  cloud_cover
-    Time                                                                                   
+    Time
     2026-03-02 11:30:00  0.064532  113.664500  113.683528  0.364306 -3.7  2.39        100.0
     2026-03-02 12:30:00  0.000000   96.208806   96.202361  0.360213 -3.8  2.31        100.0
     2026-03-02 13:30:00  0.000000   68.659722   68.658861  0.358353 -3.9  1.37        100.0
@@ -168,7 +168,7 @@ def test_values_are_reasonable():
     min_cloud_cover = radiation_forecast["cloud_cover"].min()
     max_cloud_cover = radiation_forecast["cloud_cover"].max()
 
-    assert min_dni  >= 0, (
+    assert min_dni >= 0, (
         print("dni radiation forecast had a value lower than 0. This is not physically possible. Possible filtering"
               "failure?")
     )
