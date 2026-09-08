@@ -290,10 +290,3 @@ def __get_irradiance_pvlib(latitude, longitude, date_start: datetime, date_end: 
     # returning clearsky irradiance df
     return clearsky
 
-
-
-df = collect_fmi_opendata(60.43, 24.043)
-
-
-
-print_full(df)
